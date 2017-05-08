@@ -1032,6 +1032,7 @@ input[type='tel'],
 input[type='password'],
 input[type='search'],
 input[type='number'],
+input[type='file'],
 textarea,
 select {
   font-size: rem(14);
@@ -5268,7 +5269,9 @@ $image-bar-placeholder-border-color: rgba($color-body-text, 0.25);
 }
 
 .single-option-selector,
-.product-form__quantity-input {
+.product-form__quantity-input,
+.product-form__custom-required-input,
+.product-form__custom-optional-input {
   opacity: 0;
   margin-bottom: 0;
 
@@ -5277,12 +5280,16 @@ $image-bar-placeholder-border-color: rgba($color-body-text, 0.25);
   }
 }
 
-input[type='number'].product-form__quantity-input {
+input[type='number'].product-form__quantity-input,
+input[type='number'].product-form__custom-required-input,
+input[type='file'].product-form__custom-optional-input {
   margin-bottom: 0;
 }
 
 .single-option-selector__label,
-.product-form__quantity-label {
+.product-form__quantity-label,
+.product-form__custom-optional-label,
+.product-form__custom-required-label {
   display: inline-block;
   position: absolute;
   padding: ($gutter / 2) $gutter;
@@ -6685,7 +6692,7 @@ $social-sharing-link-border-color: rgba($color-body-text, 0.1);
 
   40% {
     opacity: 1;
-  }  
+  }
 }
 
 @include keyframes(sk-circleFadeDelay) {

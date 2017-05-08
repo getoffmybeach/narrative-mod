@@ -39,7 +39,28 @@
       <input class="product-form__quantity-input" type="number" id="Quantity-{{ section.id }}" name="quantity" value="1" min="1" pattern="[0-9]*">
     </div>
   {% endif %}
-
+  {% comment %}
+  ------------------------------------------------------------------------------
+  Custom Properties
+  ------------------------------------------------------------------------------
+  {% endcomment %}
+  {% unless section.settings.custom_required_property == empty %}
+    <div class="product-form__item">
+        <label class="product-form__custom-required-label" for="Custom-required-{{ section.id }}">{{ section.settings.custom_required_property }}</label>
+        <input required class="product-form__custom-required-input" type="number" id="Custom-required-{{ section.id }}" name="{{ section.settings.custom_required_property | handleize }}">
+    </div>
+  {% endunless %}
+  {% unless section.settings.custom_optional_property == empty %}
+    <div class="product-form__item">
+        <label class="product-form__custom-optional-label" for="Custom-optional-{{ section.id }}">{{ section.settings.custom_optional_property }}</label>
+        <input class="product-form__custom-optional-input" type="file" id="Custom-optional-{{ section.id }}" name="{{ section.settings.custom_optional_property | handleize }}">
+    </div>
+  {% endunless %}
+  {% comment %}
+  ------------------------------------------------------------------------------
+  Cart
+  ------------------------------------------------------------------------------
+  {% endcomment %}
   <div class="product__add-to-cart">
     <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite"{% unless current_variant.available %} disabled="true"{% endunless %} aria-live="polite">
       <span class="primary-text" aria-hidden=false data-cart-primary-submit-text>

@@ -44,17 +44,34 @@
   Custom Properties
   ------------------------------------------------------------------------------
   {% endcomment %}
+
+{% comment %}
   {% unless section.settings.custom_required_property == empty %}
     <div class="product-form__item">
-        <label class="product-form__custom-required-label" for="Custom-required-{{ section.id }}">{{ section.settings.custom_required_property }}</label>
-        <input required class="product-form__custom-required-input" type="number" id="Custom-required-{{ section.id }}" name="{{ section.settings.custom_required_property | handleize }}">
+      <label class="product-form__custom-required-label" for="Custom-required-{{ section.id }}">{{ section.settings.custom_required_property }}</label>
+      <input required class="product-form__custom-required-input" type="number" id="Custom-required-{{ section.id }}" name="{{ section.settings.custom_required_property | handleize }}">
     </div>
   {% endunless %}
   {% unless section.settings.custom_optional_property == empty %}
     <div class="product-form__item">
-        <label class="product-form__custom-optional-label" for="Custom-optional-{{ section.id }}">{{ section.settings.custom_optional_property }}</label>
-        <input class="product-form__custom-optional-input" type="file" id="Custom-optional-{{ section.id }}" name="{{ section.settings.custom_optional_property | handleize }}">
+      <label class="product-form__custom-optional-label" for="Custom-optional-{{ section.id }}">{{ section.settings.custom_optional_property }}</label>
+      <input class="product-form__custom-optional-input" type="file" id="Custom-optional-{{ section.id }}" name="{{ section.settings.custom_optional_property | handleize }}">
     </div>
+  {% endunless %}
+{% endcomment %}
+{% comment %}
+  Custom Property Blocks
+  To do: rename the class names.
+{% endcomment %}
+  {% unless section.blocks == empty %}
+    {% for block in section.blocks %}
+      <div class="product-form__item" {{ block.shopify_attributes }}>
+        {% unless block.settings.custom_property == empty %}
+        <label class="product-form__custom-required-label" for="{{ block-type }}-{{ block.id }}-{{ section.id }}">{{ block.settings.custom_property }}</label>
+        {% endunless %}
+        <input {% if block.settings.custom_required %} required {% endif %} class="product-form__custom-required-input" type="number" id="{{ block-type }}-{{ block.id }}-{{ section.id }}" name="{{ block.settings.custom_property | handleize }}">
+      </div>
+    {% endfor %}
   {% endunless %}
   {% comment %}
   ------------------------------------------------------------------------------

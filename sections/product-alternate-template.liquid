@@ -304,16 +304,25 @@
       "label": "Show social sharing buttons",
       "info": "Make sure you have enabled social sharing in general settings",
       "default": true
-    },
+    }
+  ],
+  "blocks": [
     {
-      "type": "text",
-      "id": "custom_required_property",
-      "label": "Custom required property"
-    },
-    {
-      "type": "text",
-      "id": "custom_optional_property",
-      "label": "Custom optional property"
+      "type": "custom-property",
+      "name": "Custom Property",
+      "settings": [
+        {
+          "type": "text",
+          "id": "custom_property",
+          "label": "Property Name",
+          "default": "Property1"
+        },
+        {
+        "type": "checkbox",
+        "id": "custom_required",
+        "label": "Required"
+        }
+      ]
     }
   ]
 }

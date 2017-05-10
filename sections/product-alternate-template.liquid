@@ -313,13 +313,25 @@
       "settings": [
         {
           "type": "text",
-          "id": "custom_property",
+          "id": "custom_property_name",
           "label": "Property Name",
           "default": "Property1"
         },
         {
+          "type": "select",
+          "id": "custom_property_type",
+          "label": "Type",
+          "options": [
+            { "value": "text", "label": "Text"},
+            { "value": "number", "label": "Number"},
+            { "value": "file", "label": "File"},
+            { "value": "checkbox", "label": "Checkbox"}
+          ],
+          "default": "text"
+        },
+        {
         "type": "checkbox",
-        "id": "custom_required",
+        "id": "custom_property_required",
         "label": "Required"
         }
       ]

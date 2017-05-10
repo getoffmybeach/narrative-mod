@@ -5270,8 +5270,7 @@ $image-bar-placeholder-border-color: rgba($color-body-text, 0.25);
 
 .single-option-selector,
 .product-form__quantity-input,
-.product-form__custom-required-input,
-.product-form__custom-optional-input {
+.product-form__custom-property-input {
   opacity: 0;
   margin-bottom: 0;
 
@@ -5281,15 +5280,15 @@ $image-bar-placeholder-border-color: rgba($color-body-text, 0.25);
 }
 
 input[type='number'].product-form__quantity-input,
-input[type='number'].product-form__custom-required-input,
-input[type='file'].product-form__custom-optional-input {
+input[type='number'].product-form__custom-property-input,
+input[type='text'].product-form__custom-property-input,
+input[type='file'].product-form__custom-property-input {
   margin-bottom: 0;
 }
 
 .single-option-selector__label,
 .product-form__quantity-label,
-.product-form__custom-optional-label,
-.product-form__custom-required-label {
+.product-form__custom-property-label {
   display: inline-block;
   position: absolute;
   padding: ($gutter / 2) $gutter;

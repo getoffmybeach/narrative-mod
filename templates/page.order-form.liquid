@@ -1,0 +1,20 @@
+{% assign collection = collections.pf-bikes %}
+
+{% unless collection.products_count <= 0 %}
+<table>
+    {% for product in collection.products %}
+        <h2>{{ product.title }}</h2>
+        {% unless product.options_with_values == empty %}
+            {% for option in product.options_with_values%}
+                <label for="{{ product.id }}-{{ option.name }}">{{ option.name }}</label>
+                {% for value in option.values %}
+                    <select name="options[{{ option.name }}]" id="{{ product.id }}-{{ option.name }}">
+                        <option value="{{ value }}">{{ value }}</option>
+                    </select>
+                    {{ value }}
+                {% endfor %}
+            {% endfor %}
+        {% endunless %}
+    {% endfor %}
+</table>
+{% endunless %}

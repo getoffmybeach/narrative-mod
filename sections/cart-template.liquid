@@ -146,6 +146,8 @@
       </tbody>
     </table>
 
+    {% include 'gift-wrapping' %}
+
     <footer class="cart-footer">
       <div class="grid">
         {% if section.settings.cart_notes_enable %}
@@ -156,23 +158,23 @@
         {% endif %}
 
         <div class="grid__item text-right small--text-center{% if section.settings.cart_notes_enable %} medium-up--one-half{% endif %}">
-          <p>
-            <span class="cart__subtotal-title h4">{{ 'cart.general.subtotal' | t }}</span>
-            <span class="cart-footer__subtotal" data-cart-subtotal>{{ cart.total_price | money }}</span>
-          </p>
-          <p class="text-small">{{ 'cart.general.shipping_at_checkout' | t }}</p>
-          <div class="btn-group">
-            <input type="submit" name="update" class="btn btn--secondary supports-no-js supports-js--hide" value="{{ 'cart.general.update' | t }}">
-            <button type="submit" name="checkout" class="btn btn--loader" data-cart-submit>
-              {{ 'cart.general.checkout' | t }}
-              <span class="btn--loader-balls"></span>
-            </button>
-          </div>
-          <div class="cart-footer__message-container">
-            <div class="cart-footer__message" data-cart-message></div>
-          </div>
+        <p>
+          <span class="cart__subtotal-title h4">{{ 'cart.general.subtotal' | t }}</span>
+          <span class="cart-footer__subtotal" data-cart-subtotal>{{ cart.total_price | money }}</span>
+        </p>
+        <p class="text-small">{{ 'cart.general.shipping_at_checkout' | t }}</p>
+        <div class="btn-group">
+          <input type="submit" name="update" class="btn btn--secondary supports-no-js supports-js--hide" value="{{ 'cart.general.update' | t }}">
+          <button type="submit" name="checkout" class="btn btn--loader" data-cart-submit>
+            {{ 'cart.general.checkout' | t }}
+            <span class="btn--loader-balls"></span>
+          </button>
+        </div>
+        <div class="cart-footer__message-container">
+          <div class="cart-footer__message" data-cart-message></div>
         </div>
       </div>
+</div>
     </footer>
   </form>
 </div>

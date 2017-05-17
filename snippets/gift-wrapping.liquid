@@ -3,7 +3,6 @@
 <!-- DO NOT REMOVE THE ABOVE COMMENT -->
 
 {% if linklists.gift-wrapping.links.size > 0 and linklists.gift-wrapping.links.first.type == 'product_link' %}
-
   <div id="is-a-gift" style="clear: left; margin: 30px 0" class="clearfix rte">
     <p>
       <input type="hidden" name="attributes[gift-wrapping]" value="" />
@@ -46,8 +45,8 @@
               data: { updates: { {{ id }}: {{ items_in_cart }} }, attributes: { 'gift-wrapping': true } },
           dataType: 'json',
               success: function() { location.href = '/cart'; }
-      });
-      }
+          });
+      };
 
       Shopify.Cart.GiftWrap.remove = function() {
           jQuery.ajax({
@@ -56,27 +55,27 @@
               data: { updates: { {{ id }}: 0 }, attributes: { 'gift-wrapping': '' } },
           dataType: 'json',
               success: function() { location.href = '/cart'; }
-      });
-      }
+          });
+      };
 
       // If we have nothing but gift-wrap items in the cart.
       {% if cart.items.size == 1 and gift_wraps_in_cart > 0 %}
-      jQuery(function() {
+      jQuery(function () {
           Shopify.Cart.GiftWrap.remove();
       });
       // If we don't have the right amount of gift-wrap items in the cart.
       {% elsif gift_wraps_in_cart > 0 and gift_wraps_in_cart != items_in_cart %}
-      jQuery(function() {
+      jQuery(function () {
           Shopify.Cart.GiftWrap.set();
       });
       // If we have a gift-wrap item in the cart but our gift-wrapping cart attribute has not been set.
-      {% elsif gift_wraps_in_cart > 0 and cart.attributes.gift-wrapping == blank  %}
-      jQuery(function() {
+      {% elsif gift_wraps_in_cart > 0 and cart.attributes.gift-wrapping == blank %}
+      jQuery(function () {
           Shopify.Cart.GiftWrap.set();
       });
       // If we have no gift-wrap item in the cart but our gift-wrapping cart attribute has been set.
-      {% elsif gift_wraps_in_cart == 0 and cart.attributes.gift-wrapping != blank  %}
-      jQuery(function() {
+      {% elsif gift_wraps_in_cart == 0 and cart.attributes.gift-wrapping != blank %}
+      jQuery(function () {
           Shopify.Cart.GiftWrap.set();
       });
       {% endif %}
@@ -93,6 +92,12 @@
           });
       });
 
+      //Dien
+      jQuery(function() {
+          jQuery('table.cart__table').on('change', function refreshCart() {
+             // to be continued...
+          });
+      });
   </script>
 
 {% else %}

@@ -24,6 +24,8 @@
   {% for item in cart.items %}
     {% if item.id == id %}
       {% assign gift_wraps_in_cart = item.quantity %}
+      //Dien
+      {% assign gift_wraps_in_cart_key = item.key %}
     {% endif %}
   {% endfor %}
   {% assign items_in_cart = cart.item_count | minus: gift_wraps_in_cart %}
@@ -94,7 +96,7 @@
 
       //Dien
       jQuery(function() {
-          jQuery('table.cart__table').on('change', function refreshCart() {
+          jQuery('tr.{{ gift_wraps_in_cart_key }}').on('change', 'a.cart-item__meta-title', function refreshCart() {
              // to be continued...
           });
       });

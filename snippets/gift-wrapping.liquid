@@ -100,23 +100,29 @@
 
       //Dien
       jQuery(function() {
+//          $('#quantity_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).prop("disabled", true);
+//          $('#updates_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).prop("disabled", true);
           var itemsInCart = 0;
           $('table.cart__table').on('change', 'input.cart-item__qty-input', function refreshCart() {
-              $('input.cart-item__qty-input').each(function countItems() {
-                  console.log($(this).attr('id'));
-                  if ($(this).attr('id').includes('{{ gift_wraps_in_cart_key }}')) {
-                      console.log("cart key matched");
-                      return 0;
-                  }
-                  itemsInCart += (+this.value);
-                  console.log(itemsInCart + " ");
-              });
+              if ($('input#gift-wrapping[type="checkbox"]').prop("checked")) {
+                  // Count cart items that are not the gift wrap product
+                  $('input.cart-item__qty-input').each(function countItems() {
+                      console.log($(this).attr('id'));
+                      if ($(this).attr('id').includes('{{ gift_wraps_in_cart_key }}')) {
+                          console.log("cart key matched");
+                          return;
+                      }
+                      itemsInCart += (+this.value);
+                      console.log(itemsInCart + " ");
+                  });
 
-              // The id changes from updates_ to quantity_ after cart refresh!!!
-              $('#quantity_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).val(itemsInCart);
-              $('#updates_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).val(itemsInCart);
-              Shopify.Cart.GiftWrap.set(itemsInCart, $.noop);
-              itemsInCart = 0;
+                  // Update gift wrap quantity to match total items quantity
+                  // The id changes from updates_<key> to quantity_<key> after cart refresh!!!
+                  $('#quantity_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).val(itemsInCart);
+                  $('#updates_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).val(itemsInCart);
+                  Shopify.Cart.GiftWrap.set(itemsInCart, $.noop);
+                  itemsInCart = 0;
+              }
           });
       });
   </script>

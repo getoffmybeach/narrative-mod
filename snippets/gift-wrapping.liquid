@@ -126,6 +126,7 @@
       // Dien
       // Auto-refreshes qty of gift wrap product when qty of other products in cart changes
       jQuery(function() {
+          // Cannot disable gift-wrap input due to bug in Narrative theme, which clones attributes to other line items.
           //$('#quantity_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).prop("disabled", true);
           //$('#updates_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).prop("disabled", true);
           $('table.cart__table').on('change', 'input.cart-item__qty-input', function recalcGiftWrap() {

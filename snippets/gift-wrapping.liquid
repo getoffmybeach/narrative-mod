@@ -41,16 +41,34 @@
       Shopify.Cart.GiftWrap = {};
 
       // Dien
-      Shopify.Cart.GiftWrap.set = function(items, callback) {
+      Shopify.Cart.GiftWrap.count = function() {
+          var itemsInCart = 0;
+          // Count total qty in cart for items that are not the gift wrap product
+          $('input.cart-item__qty-input').each(function countItems() {
+              console.log($(this).attr('id'));
+              // If gift-wrap product is in cart, then don't count its quantity
+              if ('{{ gift_wraps_in_cart_key | default: "" }}' && $(this).attr('id').includes('{{ gift_wraps_in_cart_key }}')) {
+                  console.log("gift-wrap cart key matched");
+                  return;
+              }
+              itemsInCart += (+this.value);
+              console.log("Num items: " + itemsInCart);
+          });
+
+          return itemsInCart;
+      };
+
+      // Dien modified
+      Shopify.Cart.GiftWrap.set = function(numItems, callback) {
           function setSuccess() { location.href = '/cart'; }
-          var itemsInCart = items || {{ items_in_cart }};
+          var itemsInCart = numItems || {{ items_in_cart }};
           var done = (typeof callback === 'function') ? callback : setSuccess;
           jQuery.ajax({
               type: 'POST',
               url: '/cart/update.js',
               data: { updates: { {{ id }}: itemsInCart }, attributes: { 'gift-wrapping': true } },
           dataType: 'json',
-              success: done
+          success: done
           });
       };
 
@@ -60,7 +78,7 @@
               url: '/cart/update.js',
               data: { updates: { {{ id }}: 0 }, attributes: { 'gift-wrapping': '' } },
           dataType: 'json',
-              success: function() { location.href = '/cart'; }
+          success: function() { location.href = '/cart'; }
           });
       };
 
@@ -87,10 +105,17 @@
       {% endif %}
 
       // When the gift-wrapping checkbox is checked or unchecked.
+      // Dien modified: to prevent double refresh of cart page in following scenario:
+      // You start with a state where gift-wrap (GW) is checked and a quantity of GW product in cart.
+      // You uncheck the GW checkbox, then you modify the quantities of your products in cart,
+      // so that now the total of qty is different from the total qty when GW checkbox was checked.
+      // When you then check the GW checkbox again, the cart will refresh and show the GW product reflecting the old total qty.
+      // Now, we have the qty of GW product !== current total qty of products. This will trigger another cart refresh due to
+      // the checks from the above if/elsif/endif block.
       jQuery(function() {
-          jQuery('[name="attributes\[gift-wrapping\]"]').change(function() {
+          jQuery('[name="attributes\[gift-wrapping\]"]').change(function checkboxCb() {
               if (jQuery(this).is(':checked')) {
-                  Shopify.Cart.GiftWrap.set();
+                  Shopify.Cart.GiftWrap.set(Shopify.Cart.GiftWrap.count());
               }
               else {
                   Shopify.Cart.GiftWrap.remove();
@@ -98,30 +123,20 @@
           });
       });
 
-      //Dien
+      // Dien
+      // Auto-refreshes qty of gift wrap product when qty of other products in cart changes
       jQuery(function() {
-//          $('#quantity_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).prop("disabled", true);
-//          $('#updates_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).prop("disabled", true);
-          var itemsInCart = 0;
-          $('table.cart__table').on('change', 'input.cart-item__qty-input', function refreshCart() {
-              if ($('input#gift-wrapping[type="checkbox"]').prop("checked")) {
-                  // Count cart items that are not the gift wrap product
-                  $('input.cart-item__qty-input').each(function countItems() {
-                      console.log($(this).attr('id'));
-                      if ($(this).attr('id').includes('{{ gift_wraps_in_cart_key }}')) {
-                          console.log("cart key matched");
-                          return;
-                      }
-                      itemsInCart += (+this.value);
-                      console.log(itemsInCart + " ");
-                  });
+          //$('#quantity_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).prop("disabled", true);
+          //$('#updates_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).prop("disabled", true);
+          $('table.cart__table').on('change', 'input.cart-item__qty-input', function recalcGiftWrap() {
+              if ($('input#gift-wrapping').prop("checked")) {
+                  var itemsInCart = Shopify.Cart.GiftWrap.count();
 
                   // Update gift wrap quantity to match total items quantity
-                  // The id changes from updates_<key> to quantity_<key> after cart refresh!!!
+                  // The id changes from updates_<key> to quantity_<key> after cart refresh with Theme Narrative!!!
                   $('#quantity_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).val(itemsInCart);
                   $('#updates_' + $.escapeSelector('{{ gift_wraps_in_cart_key }}')).val(itemsInCart);
                   Shopify.Cart.GiftWrap.set(itemsInCart, $.noop);
-                  itemsInCart = 0;
               }
           });
       });

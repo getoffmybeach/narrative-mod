@@ -18,7 +18,7 @@
       <input type="text" id="address_zip" name="address[zip]"{% if shop.customer_accounts_enabled and customer %} value="{{ customer.default_address.zip }}"{% endif %} />
     </p>
     <p class="field">
-      <input type="button" class="get-rates btn button" value="{{ settings.shipping_calculator_submit_button_label | default: 'Calculate shipping' }}" />
+      <input type="button" id="shipping_btn" class="get-rates btn button" value="{{ settings.shipping_calculator_submit_button_label | default: 'Calculate shipping' }}" />
     </p>
   </div>
 
@@ -57,6 +57,42 @@
 {{ 'jquery.cart.min.js' | asset_url | script_tag }}
 
 <script>
+    // Dien
+    // Retrieve address field values stored in session storage, if any, and set as defaults
+    jQuery(function loadAddressFromSessionStorage() {
+        try {
+            const country = sessionStorage.getItem('shipping-calculator-country');
+            const province = sessionStorage.getItem('shipping-calculator-province');
+            const zip = sessionStorage.getItem('shipping-calculator-zip');
+//            console.log('Setting country to: ' + `#address_country option[value="${country}"]`);
+            if (country) jQuery('#address_country').attr('data-default', country);
+            if (province) jQuery('#address_province').attr('data-default', province);
+            jQuery('#address_zip').val(zip || '');
+        }
+        catch (e) {
+            console.log('Session storage not available: ' + e);
+        }
+    });
+
+    // Dien
+    // Stores entered address info in session storage upon leaving cart page
+    jQuery(function () {
+        // Store field values before cart page unload
+        jQuery(window).on('beforeunload', function () {
+            console.log('Session storing shipping address...');
+            try {
+                sessionStorage.setItem('shipping-calculator-country', jQuery('#address_country').val() || '');
+                sessionStorage.setItem('shipping-calculator-province', jQuery('#address_province').val() || '');
+                sessionStorage.setItem('shipping-calculator-zip', jQuery('#address_zip').val() || '');
+                console.log(sessionStorage.getItem('shipping-calculator-country'));
+                console.log(sessionStorage.getItem('shipping-calculator-province'));
+                console.log(sessionStorage.getItem('shipping-calculator-zip'));
+            }
+            catch(e) {
+                console.log('Session storage not available: ' + e);
+            }
+        });
+    });
 
     Shopify.Cart.ShippingCalculator.show( {
         submitButton: {{ settings.shipping_calculator_submit_button_label | default: 'Calculate shipping' | json }},
@@ -68,18 +104,23 @@
     // Dien
     // Prevents ENTER key default behavior, e.g. form submission and page refresh, on non-button form controls
     // Only makes AJAX call if zipcode field is not empty.
+    // TODO: cookies/session storage, sanitize before storing?
+    // TODO: Focus on zipcode field on zip error; field highlight and error msg to be re-styled
+    // TODO: any enhancements for logged in customers?
     jQuery(function() {
-// Using jQuery :input selector to select all form controls: ':input'
-        $('#shipping-calculator').on('keypress', ':input', function enterKeyHandler(e) {
+        // Using jQuery :input selector to select all form controls: ':input'
+        jQuery('#shipping-calculator').on('keypress', ':input', function enterKeyHandler(e) {
 //            console.dir(e);
 //            console.dir(this);
             if (e.which === 13) {
-                if ($(this).is('[type="button"]')) {
+                // If ENTER on button, focus should remain on button for UX consistency.
+                if (jQuery(this).is('[type="button"]')) {
                     console.log('ENTER on button');
-                    document.getElementById('address_zip').focus();
+                    //TODO: is there a better way?
+                    setTimeout(function() { jQuery('#shipping_btn').focus(); }, 500);
                     return;
                 }
-                if (!jQuery.trim($('#address_zip').val())) {
+                if (!jQuery.trim(jQuery('#address_zip').val())) {
                     console.log('ENTER caught; preventDefault');
                     e.preventDefault();
                 }
@@ -87,11 +128,12 @@
                     console.log('ENTER caught; triggerHandler(click)');
                     e.preventDefault();
                     // Contrary to trigger(), triggerHandler only operates on first matched element
-                    $('input.get-rates').triggerHandler('click');
+                    jQuery('input.get-rates').triggerHandler('click');
                 }
             }
         });
     });
+
 </script>
 
 {% endunless %}

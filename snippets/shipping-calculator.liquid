@@ -66,22 +66,27 @@
     } );
 
     // Dien
-    // Prevents ENTER default behavior, e.g. form submission and page refresh, on non-button form controls
+    // Prevents ENTER key default behavior, e.g. form submission and page refresh, on non-button form controls
     // Only makes AJAX call if zipcode field is not empty.
     jQuery(function() {
-        // Using jQuery :input selector to select all form controls
-        $('#shipping-calculator').on('keypress', ':input[type!="button"]' , function enterKeyHandler(e) {
-            console.dir(e);
-            console.dir(this);
+// Using jQuery :input selector to select all form controls: ':input'
+        $('#shipping-calculator').on('keypress', ':input', function enterKeyHandler(e) {
+//            console.dir(e);
+//            console.dir(this);
             if (e.which === 13) {
+                if ($(this).is('[type="button"]')) {
+                    console.log('ENTER on button');
+                    document.getElementById('address_zip').focus();
+                    return;
+                }
                 if (!jQuery.trim($('#address_zip').val())) {
                     console.log('ENTER caught; preventDefault');
                     e.preventDefault();
                 }
                 else {
                     console.log('ENTER caught; triggerHandler(click)');
-                    // Contrary to trigger(), triggerHandler only operates on first matched element
                     e.preventDefault();
+                    // Contrary to trigger(), triggerHandler only operates on first matched element
                     $('input.get-rates').triggerHandler('click');
                 }
             }

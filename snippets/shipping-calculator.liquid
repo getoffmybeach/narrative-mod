@@ -58,7 +58,7 @@
 
 <script>
     // Dien
-    // Retrieve address field values stored in session storage, if any, and set as defaults
+    // Retrieves user-entered address info from session storage, if any, and sets as defaults
     jQuery(function loadAddressFromSessionStorage() {
         try {
             const country = sessionStorage.getItem('shipping-calculator-country');
@@ -67,7 +67,7 @@
 //            console.log('Setting country to: ' + `#address_country option[value="${country}"]`);
             if (country) jQuery('#address_country').attr('data-default', country);
             if (province) jQuery('#address_province').attr('data-default', province);
-            jQuery('#address_zip').val(zip || '');
+            if (zip) jQuery('#address_zip').val(jQuery('<div>').html(zip).text());
         }
         catch (e) {
             console.log('Session storage not available: ' + e);
@@ -75,15 +75,19 @@
     });
 
     // Dien
-    // Stores entered address info in session storage upon leaving cart page
+    // Stores user-entered address info in session storage before leaving cart page
     jQuery(function () {
         // Store field values before cart page unload
         jQuery(window).on('beforeunload', function () {
             console.log('Session storing shipping address...');
             try {
+                var zip = jQuery('#address_zip').val();
+                const sanitizedZip = zip ? jQuery('<div>').text(zip).html() : '';
                 sessionStorage.setItem('shipping-calculator-country', jQuery('#address_country').val() || '');
                 sessionStorage.setItem('shipping-calculator-province', jQuery('#address_province').val() || '');
-                sessionStorage.setItem('shipping-calculator-zip', jQuery('#address_zip').val() || '');
+                sessionStorage.setItem('shipping-calculator-zip', sanitizedZip);
+                // Debug
+                console.log("Sanitized Zip: " + sanitizedZip);
                 console.log(sessionStorage.getItem('shipping-calculator-country'));
                 console.log(sessionStorage.getItem('shipping-calculator-province'));
                 console.log(sessionStorage.getItem('shipping-calculator-zip'));
@@ -104,7 +108,8 @@
     // Dien
     // Prevents ENTER key default behavior, e.g. form submission and page refresh, on non-button form controls
     // Only makes AJAX call if zipcode field is not empty.
-    // TODO: cookies/session storage, sanitize before storing?
+    // xTODO: cookies/session storage, sanitize before storing?
+    // TODO: To debug: country resets to --- on qty change.
     // TODO: Focus on zipcode field on zip error; field highlight and error msg to be re-styled
     // TODO: any enhancements for logged in customers?
     jQuery(function() {

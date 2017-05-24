@@ -65,7 +65,7 @@
 <script>
     // Dien
     // Retrieves user-entered address info from session storage, if any, and sets as defaults
-    jQuery(function loadAddressFromSessionStorage() {
+    jQuery(function loadSessionStoredAddress() {
         try {
             const country = sessionStorage.getItem('shipping-calculator-country');
             const province = sessionStorage.getItem('shipping-calculator-province');
@@ -84,7 +84,7 @@
     // Stores user-entered address info in session storage before leaving cart page
     jQuery(function () {
         // Store field values before cart page unload
-        jQuery(window).on('beforeunload', function () {
+        jQuery(window).on('beforeunload', function sessionStoreAddress() {
             console.log('Session storing shipping address...');
             try {
                 var zip = jQuery('#address_zip').val();
@@ -118,7 +118,7 @@
     // xTODO: To debug: country resets to --- on qty change.  Probably due to same Ajax bug with Narrative Theme
     // TODO: Focus on zipcode field on zip error; field highlight and error msg to be re-styled
     // TODO: any enhancements for logged in customers?
-    jQuery(function() {
+    jQuery(function () {
         // Using jQuery :input selector to select all form controls: ':input'
         jQuery('#shipping-calculator').on('keypress', ':input', function enterKeyHandler(e) {
 //            console.dir(e);
@@ -128,7 +128,7 @@
                 if (jQuery(this).is('[type="button"]')) {
                     console.log('ENTER on button');
                     //TODO: is there a better way?
-                    setTimeout(function() {
+                    setTimeout(function focusOnShippingBtn() {
                         // Focus on ENTER Calculate button only if focus is not already on another element
                         if (jQuery('#shipping-calculator :focus').length == 0) {
                             console.log("Focus on ENTER btn");
@@ -152,11 +152,11 @@
     });
 
     // Highlight zip field on zip error
-    jQuery(function () {
+    jQuery(function highlightZipFieldOnError() {
         var target = document.getElementById('wrapper-response');
         var config = { childList: true };
-        var observer = new MutationObserver(function (mutations) {
-            mutations.forEach(function (m) {
+        var observer = new MutationObserver(function observeZipError(mutations) {
+            mutations.forEach(function inspectMutation(m) {
                 if (m.type === 'childList') {
                     var errorEl = m.target.querySelector('#shipping-rates-feedback.error');
                     if (/zip/i.test(jQuery(errorEl).text())) {
@@ -171,7 +171,7 @@
         console.log('Connecting observer...');
         observer.observe(target, config);
 
-        jQuery(window).on('beforeunload', function () {
+        jQuery(window).on('beforeunload', function observerCleanup() {
             console.log('Disconnecting observer...');
             observer.disconnect();
             jQuery('#address_zip').removeClass('address_zip__input--error');

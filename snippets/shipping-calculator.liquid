@@ -26,6 +26,12 @@
 
 </div>
 
+<style>
+    input:focus.address_zip__input--error {
+        outline-color: #eb4f47;
+    }
+</style>
+
 <script id="shipping-calculator-response-template" type="text/template">
   <p id="shipping-rates-feedback" <% if (success) { %> class="success" <% } else { %> class="error" <% } %>>
   <% if (success) { %>
@@ -109,7 +115,7 @@
     // Prevents ENTER key default behavior, e.g. form submission and page refresh, on non-button form controls
     // Only makes AJAX call if zipcode field is not empty.
     // xTODO: cookies/session storage, sanitize before storing?
-    // TODO: To debug: country resets to --- on qty change.
+    // xTODO: To debug: country resets to --- on qty change.  Probably due to same Ajax bug with Narrative Theme
     // TODO: Focus on zipcode field on zip error; field highlight and error msg to be re-styled
     // TODO: any enhancements for logged in customers?
     jQuery(function() {
@@ -118,11 +124,17 @@
 //            console.dir(e);
 //            console.dir(this);
             if (e.which === 13) {
-                // If ENTER on button, focus should remain on button for UX consistency.
+                // If ENTER on Calculate button, then focus should remain on button for UX consistency.
                 if (jQuery(this).is('[type="button"]')) {
                     console.log('ENTER on button');
                     //TODO: is there a better way?
-                    setTimeout(function() { jQuery('#shipping_btn').focus(); }, 500);
+                    setTimeout(function() {
+                        // Focus on ENTER Calculate button only if focus is not already on another element
+                        if (jQuery('#shipping-calculator :focus').length == 0) {
+                            console.log("Focus on ENTER btn");
+                            jQuery('#shipping_btn').focus();
+                        }
+                    }, 500);
                     return;
                 }
                 if (!jQuery.trim(jQuery('#address_zip').val())) {
@@ -137,6 +149,33 @@
                 }
             }
         });
+    });
+
+    // Highlight zip field on zip error
+    jQuery(function () {
+        var target = document.getElementById('wrapper-response');
+        var config = { childList: true };
+        var observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (m) {
+                if (m.type === 'childList') {
+                    var errorEl = m.target.querySelector('#shipping-rates-feedback.error');
+                    if (/zip/i.test(jQuery(errorEl).text())) {
+                        console.log('Highlighting zipcode field...');
+                        // TODO needs more robust implementation...
+                        jQuery('#address_zip').addClass('address_zip__input--error').focus();
+                    }
+                }
+            });
+        });
+
+        console.log('Connecting observer...');
+        observer.observe(target, config);
+
+        jQuery(window).on('beforeunload', function () {
+            console.log('Disconnecting observer...');
+            observer.disconnect();
+            jQuery('#address_zip').removeClass('address_zip__input--error');
+        })
     });
 
 </script>

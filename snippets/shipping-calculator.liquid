@@ -18,7 +18,7 @@
       <input type="text" id="address_zip" name="address[zip]"{% if shop.customer_accounts_enabled and customer %} value="{{ customer.default_address.zip }}"{% endif %} />
     </p>
     <p class="field">
-      <input type="button" id="shipping_btn" class="get-rates btn button" value="{{ settings.shipping_calculator_submit_button_label | default: 'Calculate shipping' }}" />
+      <input type="button" id="get_rates_btn" class="get-rates btn button" value="{{ settings.shipping_calculator_submit_button_label | default: 'Calculate shipping' }}" />
     </p>
   </div>
 
@@ -67,6 +67,7 @@
     // Retrieves user-entered address info from session storage, if any, and sets as defaults
     jQuery(function loadSessionStoredAddress() {
         try {
+            console.log('Restoring saved shipping address...');
             const country = sessionStorage.getItem('shipping-calculator-country');
             const province = sessionStorage.getItem('shipping-calculator-province');
             const zip = sessionStorage.getItem('shipping-calculator-zip');
@@ -119,24 +120,39 @@
     // TODO: Focus on zipcode field on zip error; field highlight and error msg to be re-styled
     // TODO: any enhancements for logged in customers?
     jQuery(function () {
+        var ratesBtn             = jQuery('#get_rates_btn');
+        var ratesBtnDefaultLabel = ratesBtn.val();
         // Using jQuery :input selector to select all form controls: ':input'
         jQuery('#shipping-calculator').on('keypress', ':input', function enterKeyHandler(e) {
 //            console.dir(e);
 //            console.dir(this);
             if (e.which === 13) {
-                // If ENTER on Calculate button, then focus should remain on button for UX consistency.
+                // If ENTER was on Calculate button, then do not preventDefault behavior
+                // and focus should remain on button after form submission, for UX consistency.
                 if (jQuery(this).is('[type="button"]')) {
+                    var pollingLimit = 20;
                     console.log('ENTER on button');
                     //TODO: is there a better way?
                     setTimeout(function focusOnShippingBtn() {
-                        // Focus on ENTER Calculate button only if focus is not already on another element
+                        // Focus on Calculate button only if focus was not moved to another element
                         if (jQuery('#shipping-calculator :focus').length == 0) {
-                            console.log("Focus on ENTER btn");
-                            jQuery('#shipping_btn').focus();
+                            // Focus only if btn is enabled
+                            if (ratesBtn.val() === ratesBtnDefaultLabel) {
+                                console.log('Focus on CALCULATE btn');
+                                ratesBtn.focus();
+                            }
+                            else {
+                                if (!pollingLimit--)
+                                    return;
+                                console.log('setTimeout for btn focus... ' + pollingLimit);
+                                setTimeout(focusOnShippingBtn, 100);
+                            }
                         }
-                    }, 500);
+                    }, 300);
+
                     return;
                 }
+                // If zip field empty
                 if (!jQuery.trim(jQuery('#address_zip').val())) {
                     console.log('ENTER caught; preventDefault');
                     e.preventDefault();

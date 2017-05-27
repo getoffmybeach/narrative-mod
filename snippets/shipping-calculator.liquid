@@ -27,8 +27,14 @@
 </div>
 
 <style>
-    input:focus.address_zip__input--error {
+    #address_zip:focus.address_zip__input--error {
         outline-color: #eb4f47;
+    }
+    #address_zip:focus.transitioning {
+        -webkit-transition: outline-color 0.50s linear 0.25s;
+        -moz-transition: outline-color 0.50s linear 0.25s;
+        -o-transition: outline-color 0.50s linear 0.25s;
+        transition: outline-color 0.50s linear 0.25s;
     }
 </style>
 
@@ -63,6 +69,9 @@
 {{ 'jquery.cart.min.js' | asset_url | script_tag }}
 
 <script>
+    // NOTE:  Some of these custom enhancements may be better implemented in jquery.cart.js.
+    // if we had access to the un-minimized version.
+
     // Dien
     // Retrieves user-entered address info from session storage, if any, and sets as defaults
     jQuery(function loadSessionStoredAddress() {
@@ -169,6 +178,7 @@
 
     // Highlight zip field on zip error
     jQuery(function highlightZipFieldOnError() {
+        var zipEl  = jQuery('#address_zip');
         var target = document.getElementById('wrapper-response');
         var config = { childList: true };
         var observer = new MutationObserver(function observeZipError(mutations) {
@@ -178,7 +188,12 @@
                     if (/zip/i.test(jQuery(errorEl).text())) {
                         console.log('Highlighting zipcode field...');
                         // TODO needs more robust implementation...
-                        jQuery('#address_zip').addClass('address_zip__input--error').focus();
+                        zipEl.on('blur', () => zipEl.removeClass('transitioning'));
+                        // blur before focus so that error highlight activates even if focus was already on element
+                        zipEl.addClass('address_zip__input--error').blur().focus();
+                        // return back to normal focus highlight with a transition
+                        zipEl.addClass('transitioning');
+                        zipEl.removeClass('address_zip__input--error');
                     }
                 }
             });
@@ -190,7 +205,7 @@
         jQuery(window).on('beforeunload', function observerCleanup() {
             console.log('Disconnecting observer...');
             observer.disconnect();
-            jQuery('#address_zip').removeClass('address_zip__input--error');
+            zipEl.removeClass('address_zip__input--error transitioning');
         })
     });
 

@@ -27,14 +27,24 @@
 </div>
 
 <style>
+    /* TODO: Revise class names. Use BEM or SMACSS */
     #address_zip:focus.address_zip__input--error {
         outline-color: #eb4f47;
     }
     #address_zip:focus.transitioning {
-        -webkit-transition: outline-color 0.50s linear 0.25s;
-        -moz-transition: outline-color 0.50s linear 0.25s;
-        -o-transition: outline-color 0.50s linear 0.25s;
-        transition: outline-color 0.50s linear 0.25s;
+        -webkit-transition: outline-color 0.75s linear 2s;
+        -moz-transition: outline-color 0.75s linear 2s;
+        -o-transition: outline-color 0.75s linear 2s;
+        transition: outline-color 0.75s linear 2s;
+    }
+    #shipping-rates-feedback.error.startingColor {
+        color: #eb4f47;
+    }
+    #shipping-rates-feedback.error.transitioning {
+        -webkit-transition: color 0.75s linear 2s;
+        -moz-transition: color 0.75s linear 2s;
+        -o-transition: color 0.75s linear 2s;
+        transition: color 0.75s linear 2s;
     }
 </style>
 
@@ -126,11 +136,11 @@
     // Only makes AJAX call if zipcode field is not empty.
     // xTODO: cookies/session storage, sanitize before storing?
     // xTODO: To debug: country resets to --- on qty change.  Probably due to same Ajax bug with Narrative Theme
-    // TODO: Focus on zipcode field on zip error; field highlight and error msg to be re-styled
+    // xTODO: Focus on zipcode field on zip error; field highlight and error msg to be re-styled
     // TODO: any enhancements for logged in customers?
     jQuery(function () {
         var ratesBtn             = jQuery('#get_rates_btn');
-        var ratesBtnDefaultLabel = ratesBtn.val();
+        var ratesBtnEnabledLabel = ratesBtn.val();
         // Using jQuery :input selector to select all form controls: ':input'
         jQuery('#shipping-calculator').on('keypress', ':input', function enterKeyHandler(e) {
 //            console.dir(e);
@@ -141,12 +151,11 @@
                 if (jQuery(this).is('[type="button"]')) {
                     var pollingLimit = 20;
                     console.log('ENTER on button');
-                    //TODO: is there a better way?
                     setTimeout(function focusOnShippingBtn() {
                         // Focus on Calculate button only if focus was not moved to another element
                         if (jQuery('#shipping-calculator :focus').length == 0) {
-                            // Focus only if btn is enabled
-                            if (ratesBtn.val() === ratesBtnDefaultLabel) {
+                            // Focus only if btn is re-enabled
+                            if (ratesBtn.val() === ratesBtnEnabledLabel) {
                                 console.log('Focus on CALCULATE btn');
                                 ratesBtn.focus();
                             }
@@ -161,10 +170,11 @@
 
                     return;
                 }
-                // If zip field empty
+                // If zip field empty, focus on zip field
                 if (!jQuery.trim(jQuery('#address_zip').val())) {
                     console.log('ENTER caught; preventDefault');
                     e.preventDefault();
+                    jQuery('#address_zip').focus();
                 }
                 else {
                     console.log('ENTER caught; triggerHandler(click)');
@@ -184,16 +194,22 @@
         var observer = new MutationObserver(function observeZipError(mutations) {
             mutations.forEach(function inspectMutation(m) {
                 if (m.type === 'childList') {
-                    var errorEl = m.target.querySelector('#shipping-rates-feedback.error');
-                    if (/zip/i.test(jQuery(errorEl).text())) {
+                    var errorEl = jQuery(m.target.querySelector('#shipping-rates-feedback.error'));
+                    if (/zip/i.test(errorEl.text())) {
                         console.log('Highlighting zipcode field...');
-                        // TODO needs more robust implementation...
-                        zipEl.on('blur', () => zipEl.removeClass('transitioning'));
+                        errorEl.addClass('startingColor');
+                        zipEl.on('blur', function removeTransitionClass() {
+                            zipEl.removeClass('transitioning');
+                            errorEl.removeClass('transitioning');
+                        });
                         // blur before focus so that error highlight activates even if focus was already on element
                         zipEl.addClass('address_zip__input--error').blur().focus();
-                        // return back to normal focus highlight with a transition
+                        // return to normal focus highlight with a transition
                         zipEl.addClass('transitioning');
+                        // zip error message also changes color thru a transition
+                        errorEl.addClass('transitioning');
                         zipEl.removeClass('address_zip__input--error');
+                        errorEl.removeClass('startingColor');
                     }
                 }
             });
@@ -202,11 +218,12 @@
         console.log('Connecting observer...');
         observer.observe(target, config);
 
-        jQuery(window).on('beforeunload', function observerCleanup() {
+/*        jQuery(window).on('beforeunload', function observerCleanup() {
             console.log('Disconnecting observer...');
             observer.disconnect();
             zipEl.removeClass('address_zip__input--error transitioning');
-        })
+            jQuery('#shipping-rates-feedback').removeClass('transitioning');
+        });*/
     });
 
 </script>

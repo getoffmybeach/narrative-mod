@@ -128,14 +128,14 @@
           var removeCallback = null;
           // If cart drawer enabled, prevent set() and remove() from loading /cart page.
           if ('{{ settings.show_cart_drawer | default: "false" }}' === 'true') {
-          // TODO to be continued... callback should be to add or remove gift wrapping line item from the DOM
+              // TODO to be continued... callback should be to add or remove gift wrapping line item from the DOM
               setCallback = function addGWItemToDOM() {
 
               };
 
               removeCallback = function removeGWItemfromDOM() {
-                  console.log('Removing GW Item: ' + '#' + $.escapeSelector('{{ gift_wraps_in_cart_key }}') + 'button.cart-drawer__item-delete');
-                  jQuery('#' + $.escapeSelector('{{ gift_wraps_in_cart_key }}') + 'button.cart-drawer__item-delete').trigger('click');
+                  console.log('Removing GW Item: ' + '#' + $.escapeSelector('{{ gift_wraps_in_cart_key }}') + ' button.cart-drawer__item-delete');
+                  jQuery('#' + $.escapeSelector('{{ gift_wraps_in_cart_key }}') + ' button.cart-drawer__item-delete').trigger('click');
               };
           }
           jQuery('[name="attributes\[gift-wrapping\]"]').change(function checkboxCb() {

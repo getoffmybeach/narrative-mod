@@ -146,7 +146,12 @@
       </tbody>
     </table>
 
-    {% include 'gift-wrapping' %}
+    <!-- Dien -->
+    <!-- Only show GW option if enabled in settings -->
+    {% if settings.show_gift_wrapping %}
+      {% include 'gift-wrapping' %}
+    {% endif %}
+
     {% include 'shipping-calculator' %}
 
     <footer class="cart-footer">

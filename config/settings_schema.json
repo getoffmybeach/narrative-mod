@@ -581,6 +581,17 @@
     ]
   },
   {
+    "name": "Gift Wrapping Option",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "show_gift_wrapping",
+        "label": "Offer Gift Wrapping Option",
+        "default": true
+      }
+    ]
+  },
+  {
     "name": "Shipping Rates Calculator",
     "settings": [
       {

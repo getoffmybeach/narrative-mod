@@ -33,7 +33,7 @@
 
         <div class="cart-drawer__item-list" data-cart-item-list>
           {% comment %}
-          If the cart has no items, then include a item element with a template class
+          If the cart has no items, then include an item element with a template class
           so that it is hidden but still available for use client-side by ajax-cart.js
           {% endcomment %}
 
@@ -113,12 +113,21 @@
             </div>
           {% endfor %}
 
+          <!-- Dien -->
+          <!-- Only show GW option if enabled in settings -->
+          {% if settings.show_gift_wrapping %}
+            <div class="cart-drawer__item">
+              {% include 'gift-wrapping' %}
+            </div>
+          {% endif %}
+
           {% if settings.show_cart_note %}
             <div class="cart-drawer__item cart-drawer__note-container" data-cart-note-container>
               <label for="CartSpecialInstructions">{{ 'cart.general.note' | t }}</label>
               <textarea name="note" class="cart-drawer__note" data-cart-note>{{ cart.note }}</textarea>
             </div>
           {% endif %}
+
         </div>
       </div>
     </div>

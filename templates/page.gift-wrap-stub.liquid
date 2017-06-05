@@ -1,0 +1,83 @@
+{% comment %}
+DIEN:
+This page generates the HTML code for the Gift Wrap line item to be inserted into the Cart Drawer's items list.
+The code is inserted when Gift Wrap checkbox is checked.  Effectively, the cart's content is updated without page refresh.
+Also includes:
+ - The span element for the subtotal used to update the cart's subtotal.
+ - The span element for the total discount used to update the cart's total discount.
+{% endcomment %}
+{%- layout none -%}
+{%- assign id = linklists.gift-wrapping.links.first.object.variants.first.id -%}
+{%- for item in cart.items -%}
+  {%- if item.id == id -%}
+  <div id="{{ item.key }}" class="cart-drawer__item{% if item == 'template' %} ajax-cart__template{% endif %}" data-cart-item data-cart-item-id aria-live="polite">
+    <a href="{{ item.url }}" class="cart-drawer__item-image" style="background-image: url('{{ item | img_url: 'medium' }}');" data-cart-item-background-image data-cart-item-href></a>
+    <div class="cart-drawer__item-content">
+      <a href="{{ item.url }}" class="h4 cart-drawer__item-title" data-cart-item-href data-cart-item-title>{{ item.product.title }}</a>
+      <p class="cart-drawer__item-subtitle" data-cart-item-variant-title>
+          {% unless item.product.variants.size == 1 and item.product.options.size == 1 and item.product.options.first == 'Title' and item.variant.title == 'Default Title' %}
+          {{ item.variant.title }}
+          {% endunless %}
+      </p>
+
+      <ul class="cart-drawer__item-properties" data-cart-item-property-list>
+          {% comment %}
+        If the item has no properties, then include a property element with a template class
+        so that it is hidden but still available for use client-side by ajax-cart.js
+          {% endcomment %}
+
+          {%- assign itemProperties = 'template ' | split: ' ' -%}
+          {%- assign property_size = item.properties | size -%}
+
+          {% if property_size > 0 %}
+              {%- assign itemProperties = item.properties -%}
+          {% endif %}
+
+          {% for property in itemProperties %}
+              {% for p in itemProperties %}
+                <li class="cart-drawer__item-property{% if property == 'template' %} ajax-cart__template{% endif %}{% if p.last == blank %} visually-hidden{% endif %}" data-cart-item-property>
+                    {{ p.first }}:
+
+                    {% comment %}
+                  Check if there was an uploaded file associated
+                    {% endcomment %}
+                    {% if p.last contains '/uploads/' %}
+                      <a href="{{ p.last }}">{{ p.last | split: '/' | last }}</a>
+                    {% else %}
+                        {{ p.last }}
+                    {% endif %}
+                </li>
+              {% endfor %}
+          {% endfor %}
+      </ul>
+
+      <p class="cart-drawer__item-price-container">
+        <span class="cart-drawer__item-price" data-cart-item-price>{{ item.price | money }}</span>
+        <s data-cart-item-original-price>{% if item.price != item.original_price %}{{ item.original_price | money }}{% endif %}</s>
+      </p>
+
+      <div class="cart-drawer__item-discount-container" data-cart-item-discount-list>
+          {% comment %}
+        If the item has no properties, then include a property element with a template class
+        so that it is hidden but still available for use client-side by ajax-cart.js
+          {% endcomment %}
+
+          {%- assign itemDiscounts = 'template ' | split: ' ' -%}
+          {% if item.discounts.size > 0 %}
+              {%- assign itemDiscounts = item.discounts -%}
+          {% endif %}
+
+          {% for discount in itemDiscounts %}
+            <p class="cart-drawer__item-discount text-small{% if discount == 'template' %} ajax-cart__template{% endif %}" data-cart-item-discount>{{ discount.title }}</p>
+          {% endfor %}
+      </div>
+
+      <label for="quantity_{{ item.key }}" class="label--hidden" data-cart-item-label-quantity->{{ 'cart.general.item_quantity' | t }}</label>
+      <input id="quantity_{{ item.key }}" class="cart-drawer__item-quantity" value="{{ item.quantity }}" type="number" pattern="\d*" min="1" aria-label="{{ 'cart.general.item_quantity' | t }}" data-cart-item-input-quantity>
+
+      <button class="cart-drawer__item-delete btn-link" type="button" data-cart-item-delete>{{ 'cart.general.remove' | t }}</button>
+    </div>
+  </div>
+  {%- endif -%}
+{%- endfor -%}
+<span class="cart-drawer__subtotal-number" data-cart-subtotal>{{ cart.total_price | money }}</span><span data-cart-total-discount>{{ cart.total_discount | money }}</span>

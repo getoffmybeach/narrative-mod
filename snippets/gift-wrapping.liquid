@@ -128,7 +128,6 @@
           var removeCallback = null;
           // If cart drawer enabled, prevent set() and remove() from loading /cart page.
           if ('{{ settings.show_cart_drawer | default: "false" }}' === 'true') {
-              // TODO to be continued... callback should be to add or remove gift wrapping line item to/from the DOM
               setCallback = function addGWItemToDOM() {
                   // Retrieves "Gift Wrap Stub" page from the "Gift Wrapping" menu.
                   // The page contains the generated HTML node of the Gift Wrap line item to be inserted in the Cart Drawer.
@@ -165,6 +164,8 @@
 
       // Dien
       // Auto-refreshes qty of gift wrap product when qty of other products in cart changes
+      // TODO: Need to fix cases where this doesn't work for Cart Drawer
+      // TODO: To Fix: Gift message does not persist in Cart Drawer
       jQuery(function() {
           {% if settings.show_cart_drawer %}
               {% assign cart_container_selector = 'div.cart-drawer__item-list' %}

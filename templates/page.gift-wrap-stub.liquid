@@ -5,6 +5,8 @@ The code is inserted when Gift Wrap checkbox is checked.  Effectively, the cart'
 Also includes:
  - The span element for the subtotal used to update the cart's subtotal.
  - The span element for the total discount used to update the cart's total discount.
+
+NOTE: Uses no layout to reduce code size.
 {% endcomment %}
 {%- layout none -%}
 {%- assign id = linklists.gift-wrapping.links.first.object.variants.first.id -%}

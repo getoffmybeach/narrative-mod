@@ -16,8 +16,6 @@
       <label style="display:block" for="gift-note">Gift message (free and optional):</label>
       <textarea name="attributes[gift-note]" id="gift-note">{{ cart.attributes.gift-note }}</textarea>
     </p>
-      <!-- DIEN TEMP -->
-      <a href="{{ linklists.gift-wrapping.links[1].url }}"> {{ linklists.gift-wrapping.links[1].url }} </a>
   </div>
 
   {% assign id = linklists.gift-wrapping.links.first.object.variants.first.id %}
@@ -117,7 +115,7 @@
       {% endif %}
 
       // When the gift-wrapping checkbox is checked or unchecked.
-      // Dien modified: to prevent double refresh of cart page in following scenario:
+      // DIEN MODIFIED: to prevent double refresh of cart page in following scenario:
       // You start with a state where gift-wrap (GW) is checked and a quantity of GW product in cart.
       // You uncheck the GW checkbox, then you modify the quantities of your products in cart,
       // so that now the total of qty is different from the total qty when GW checkbox was checked.
@@ -132,8 +130,9 @@
           if ('{{ settings.show_cart_drawer | default: "false" }}' === 'true') {
               // TODO to be continued... callback should be to add or remove gift wrapping line item to/from the DOM
               setCallback = function addGWItemToDOM() {
-                  // Retrieve Gift Wrap Stub page which contains the generated HTML
-                  // for the Gift Wrap line item for the Cart Drawer
+                  // Retrieves "Gift Wrap Stub" page from the "Gift Wrapping" menu.
+                  // The page contains the generated HTML node of the Gift Wrap line item to be inserted in the Cart Drawer.
+                  // Also includes elements with the updated subtotal and discount.
                   jQuery.ajax({
                       url: '{{ linklists.gift-wrapping.links[1].url }}',
                       dataType: "html"
@@ -143,11 +142,6 @@
                       var gWLineItem = stubHTML[0];
                       var newSubtotalSpan = stubHTML[1];
                       var newTotalDiscountSpan = stubHTML[2];
-//                      console.log(htmlStr);
-                      console.log(stubHTML);
-//                      console.log(gWLineItem);
-//                      console.log(newSubtotalSpan);
-                      console.log(newTotalDiscountSpan);
                       jQuery('div.cart-drawer__item-list').prepend(gWLineItem);
                       jQuery('span.cart-drawer__subtotal-number').text(newSubtotalSpan.innerText);
                       jQuery('span[data-cart-total-discount]').text(newTotalDiscountSpan.innerText);

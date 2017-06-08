@@ -265,10 +265,10 @@
               }
           });
 
-          jQuery(window).on('beforeunload', function saveGWNote() {
+          jQuery('#gift-note').on('change', function saveGWNote() {
               var quantity  = jQuery('#{{ gift_wrap_checkbox_id }}').prop('checked') ? Shopify.Cart.GiftWrap.count() : 0;
-              var note      = jQuery('#gift-note').val();
-
+              var note      = jQuery(this).val();
+              console.log('Saving GW note...');
               jQuery.ajax({
                   type: 'POST',
                   url: '/cart/update.js',

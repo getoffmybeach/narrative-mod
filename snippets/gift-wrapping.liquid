@@ -55,6 +55,7 @@
       Shopify.Cart.GiftWrap = {};
 
       // Dien
+      Shopify.Cart.GiftWrap.costModel = '{{ settings.gift_wrapping_cost_model | default: "per_item" }}';
       Shopify.Cart.GiftWrap.key = '{{ gift_wraps_in_cart_key | default: "" }}';
       var giftWrapKeyEscapedStr = $.escapeSelector(Shopify.Cart.GiftWrap.key);
 
@@ -112,7 +113,7 @@
       Shopify.Cart.GiftWrap.set = function(numItems, callback) {
           function defaultSuccess() { location.href = '/cart'; }
           var done = (typeof callback === 'function') ? callback : defaultSuccess;
-          var itemsInCart = numItems || {{ items_in_cart }};
+          var itemsInCart = (typeof numItems === 'number') ? numItems : {{ items_in_cart }};
           var note = jQuery('#gift-note').val();
           jQuery.ajax({
               type: 'POST',
@@ -278,7 +279,6 @@
           })
       });
 
-      // TODO: To Fix: Gift message does not persist in Cart Drawer
       // TODO: GW per item and single fee
   </script>
 

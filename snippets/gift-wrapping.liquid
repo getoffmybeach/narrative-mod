@@ -108,14 +108,16 @@
 
       // Dien
       // Parameterized the function
+      // Save gift-note
       Shopify.Cart.GiftWrap.set = function(numItems, callback) {
           function defaultSuccess() { location.href = '/cart'; }
           var done = (typeof callback === 'function') ? callback : defaultSuccess;
           var itemsInCart = numItems || {{ items_in_cart }};
+          var note = jQuery('#gift-note').val();
           jQuery.ajax({
               type: 'POST',
               url: '/cart/update.js',
-              data: { updates: { {{ id }}: itemsInCart }, attributes: { 'gift-wrapping': true } },
+              data: { updates: { {{ id }}: itemsInCart }, attributes: { 'gift-wrapping': true, 'gift-note': note } },
           dataType: 'json',
           success: done
           });
@@ -254,7 +256,7 @@
           }
 
           jQuery('#{{ gift_wrap_checkbox_id }}').change(function checkboxCb() {
-              if (jQuery(this).is(':checked')) {
+              if (jQuery(this).prop('checked')) {
                   Shopify.Cart.GiftWrap.set(Shopify.Cart.GiftWrap.count(), setGiftWrapCb);
               }
               else {
@@ -262,6 +264,18 @@
                   Shopify.Cart.GiftWrap.remove(removeGiftWrapCb);
               }
           });
+
+          jQuery(window).on('beforeunload', function saveGWNote() {
+              var quantity  = jQuery('#{{ gift_wrap_checkbox_id }}').prop('checked') ? Shopify.Cart.GiftWrap.count() : 0;
+              var note      = jQuery('#gift-note').val();
+
+              jQuery.ajax({
+                  type: 'POST',
+                  url: '/cart/update.js',
+                  data: { updates: { {{ id }}: quantity }, attributes: { 'gift-note': note } },
+                dataType: 'json'
+              });
+          })
       });
 
       // TODO: To Fix: Gift message does not persist in Cart Drawer
@@ -269,13 +283,11 @@
   </script>
 
 {% else %}
-
   <p style="clear: left; margin: 30px 0" class="rte">
     You attempted to add a gift-wrapping script to your shopping cart, but it won't work because you don't have
     a link list with handle <code>gift-wrapping</code> which, in turn, contains a link
     to your gift-wrapping product. Please review the steps outlined
     <a href="http://docs.shopify.com/manual/configuration/store-customization/page-specific/cart-page/add-a-gift-wrap-option">here</a>.
   </p>
-
 {% endif %}
 

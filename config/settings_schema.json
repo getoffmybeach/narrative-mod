@@ -588,6 +588,22 @@
         "id": "show_gift_wrapping",
         "label": "Offer Gift Wrapping Option",
         "default": true
+      },
+      {
+        "type": "select",
+        "id": "gift_wrapping_cost_model",
+        "label": "Cost Model",
+        "options": [
+          {
+            "value": "fixed_cost",
+            "label": "Fixed Cost"
+          },
+          {
+            "value": "per_item",
+            "label": "Per Item"
+          }
+        ],
+        "default": "per_item"
       }
     ]
   },

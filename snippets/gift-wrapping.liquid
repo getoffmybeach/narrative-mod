@@ -52,6 +52,7 @@
 
   <script>
       Shopify.Cart = Shopify.Cart || {};
+      Shopify.Cart.DOM = {};
 
       Shopify.Cart.GiftWrap = (function () {
           var _key = '';
@@ -60,7 +61,7 @@
 
           function setKey(k) {
               if (typeof k !== 'undefined') {
-                  _key = k;
+                  _key = String(k);
                   _keyEscaped = $.escapeSelector(_key);
               }
           }
@@ -102,6 +103,7 @@
               function defaultSuccess() { location.href = '/cart'; }
               var done = (typeof callback === 'function') ? callback : defaultSuccess;
               _setQuantity(0);
+              setKey('');
               jQuery.ajax({
                     type: 'POST',
                     url: '/cart/update.js',
@@ -112,6 +114,7 @@
           }
 
           return {
+              DOM       : {},
               costModel : '{{ settings.gift_wrapping_cost_model | default: "per_item" }}',
               setKey    : setKey,
               getKey    : getKey,
@@ -158,10 +161,10 @@
       // The change consists of performing a recount of total qty of items before setting the GW qty.
       jQuery(function() {
 
-          Shopify.Cart.GiftWrap.init({{ gift_wraps_in_cart_key | default: "" }}, {{ items_in_cart | default: 0 }});
+          Shopify.Cart.GiftWrap.init('{{ gift_wraps_in_cart_key | default: "" }}', {{ items_in_cart | default: 0 }});
 
-          // Observer to monitor nodes addition/removal in cart drawer's item list
-          // and update the GW count accordingly
+          // Observer to monitor nodes addition/removal in cart's item list
+          // and update the Gift Wrap item count accordingly
           Shopify.Cart.observerItemList = new MutationObserver(function observeItemList(mutations) {
               var changed = mutations.some(function inspectMutation(m) {
                   if (m.type === 'childList') {
@@ -175,15 +178,16 @@
               });
 
               if (changed) {
-                  Shopify.Cart.updateGiftWrapCount();
+                  Shopify.Cart.GiftWrap.DOM.updateGiftWrapCount();
               }
           });
 
+          // Count items in cart (excludes gift-wrap)
           Shopify.Cart.count = function () {
               var itemsInCart = 0;
               var key = Shopify.Cart.GiftWrap.getKey();
               // Count total qty in cart for items that are not the gift wrap product
-              $('input.{{ cart_item_class }}').each(function countItems() {
+              $('input.{{ cart_item_class }}').each(function addItems() {
                   console.log("this.id -> " + this.id);
                   // If gift-wrap product is in cart, then don't count its quantity
                   if (key && this.id.includes(key)) {
@@ -197,7 +201,7 @@
               return itemsInCart;
           };
 
-          Shopify.Cart.updateGiftWrapCount = function () {
+          Shopify.Cart.GiftWrap.DOM.updateGiftWrapCount = function () {
               var itemsInCart = Shopify.Cart.count();
 
               // Update gift wrap quantity to match total items quantity
@@ -209,7 +213,7 @@
               Shopify.Cart.GiftWrap.set(itemsInCart, $.noop);
           };
 
-          function addGWItemToDOM() {
+          Shopify.Cart.DOM.addGWItem = function () {
               // Retrieves "Gift Wrap Stub" page from the "Gift Wrapping" menu.
               // The page contains the generated HTML node of the Gift Wrap line item to be inserted in the Cart Drawer.
               // Also includes elements with the updated subtotal and discount.
@@ -233,64 +237,59 @@
                   jQuery('{{ cart_subtotal_selector }}').text(newSubtotalSpan.innerText);
                   jQuery('{{ cart_discount_selector }}').text(newTotalDiscountSpan.innerText);
 
-                  attachObservers();
+                  Shopify.Cart.DOM.attachObservers();
               });
-          }
+          };
 
-          function removeGWItemfromDOM() {
+          Shopify.Cart.DOM.removeGWItem = function () {
+              Shopify.Cart.DOM.removeObservers();
               var key = Shopify.Cart.GiftWrap.getKeyEscaped();
               key && jQuery('#' + key + ' {{ cart_remove_btn_selector }}').trigger('click');
               Shopify.Cart.GiftWrap.setKey('');
-          }
+          };
 
-          function updateGWQuantity() {
-              if (jQuery('#{{ gift_wrap_checkbox_id }}').prop('checked')) {
-                  Shopify.Cart.updateGiftWrapCount();
-              }
-          }
-
-          function handlerRemoveGWBtn() {
-              removeObservers();
+          Shopify.Cart.GiftWrap.DOM.handlerRemoveGWBtn = function () {
+              Shopify.Cart.DOM.removeObservers();
               // Note: this does NOT trigger the "change" event on the GW checkbox
               jQuery('#{{ gift_wrap_checkbox_id }}').prop('checked', false);
               Shopify.Cart.GiftWrap.remove($.noop);
               Shopify.Cart.GiftWrap.setKey('');
-          }
+          };
 
           // Attention: Call this only when GW item is indeed present in the Cart
           // since it attaches a listener directly to the GW item remove button
-          function attachObservers() {
+          Shopify.Cart.DOM.attachObservers = function () {
               console.log('Attaching GW observers...');
               var target = document.querySelector('{{ cart_container_selector }}');
               var config = { childList: true };
               // Activate observer for cart's item removal or addition, enabling auto-refresh of GW qty
               Shopify.Cart.observerItemList.observe(target, config);
               // Attach listener for qty input element change of each item, enabling auto-refresh of GW qty
-              jQuery('{{ cart_container_selector }}').on('change.updateGiftWrapCount', 'input.{{ cart_item_class }}', updateGWQuantity);
+              jQuery('{{ cart_container_selector }}').on('change.updateGiftWrapCount', 'input.{{ cart_item_class }}', Shopify.Cart.DOM.updateGiftWrapCount);
               // Attach listener to Gift Wrap item's remove button
               var key = Shopify.Cart.GiftWrap.getKeyEscaped();
-              key && jQuery('#' + key).on('click.removeGWLineItem', '{{ cart_remove_btn_selector }}', handlerRemoveGWBtn);
-          }
+              key && jQuery('#' + key).on('click.removeGWLineItem', '{{ cart_remove_btn_selector }}', Shopify.Cart.GiftWrap.DOM.handlerRemoveGWBtn);
+          };
 
-          function removeObservers() {
+          Shopify.Cart.DOM.removeObservers = function () {
               console.log('Removing GW observers...');
               Shopify.Cart.observerItemList.disconnect();
-              jQuery('{{ cart_container_selector }}').off('change.updateGiftWrapCount', 'input.{{ cart_item_class }}', updateGWQuantity);
+              jQuery('{{ cart_container_selector }}').off('change.updateGiftWrapCount', 'input.{{ cart_item_class }}', Shopify.Cart.DOM.updateGiftWrapCount);
               var key = Shopify.Cart.GiftWrap.getKeyEscaped();
-              key && jQuery('#' + key).off('click.removeGWLineItem', '{{ cart_remove_btn_selector }}', handlerRemoveGWBtn);
+              key && jQuery('#' + key).off('click.removeGWLineItem', '{{ cart_remove_btn_selector }}', Shopify.Cart.GiftWrap.DOM.handlerRemoveGWBtn);
           }
 
           if (jQuery('#{{ gift_wrap_checkbox_id }}').prop('checked')) {
-              Shopify.Cart.updateGiftWrapCount();
-              attachObservers();
+              Shopify.Cart.DOM.updateGiftWrapCount();
+              Shopify.Cart.DOM.attachObservers();
           }
 
           var setGiftWrapCb = null;
           var removeGiftWrapCb = null;
           // If cart drawer enabled, prevent set() and remove() from loading cart page by providing them alternate callbacks
           if ('{{ settings.show_cart_drawer | default: "false" }}' === 'true') {
-              setGiftWrapCb = addGWItemToDOM;
-              removeGiftWrapCb = removeGWItemfromDOM;
+              setGiftWrapCb = Shopify.Cart.DOM.addGWItem;
+              removeGiftWrapCb = removeGWItem;
           }
 
           jQuery('#{{ gift_wrap_checkbox_id }}').change(function checkboxCb() {
@@ -298,7 +297,6 @@
                   Shopify.Cart.GiftWrap.set(Shopify.Cart.count(), setGiftWrapCb);
               }
               else {
-                  removeObservers();
                   Shopify.Cart.GiftWrap.remove(removeGiftWrapCb);
               }
           });
@@ -317,6 +315,8 @@
       });
 
       // TODO: GW per item and single fee
+      // TODO: move key property to GiftWrap.DOM?
+      
   </script>
 
 {% else %}

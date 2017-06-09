@@ -52,12 +52,86 @@
 
   <script>
       Shopify.Cart = Shopify.Cart || {};
-      Shopify.Cart.GiftWrap = {};
 
-      // Dien
-      Shopify.Cart.GiftWrap.costModel = '{{ settings.gift_wrapping_cost_model | default: "per_item" }}';
-      Shopify.Cart.GiftWrap.key = '{{ gift_wraps_in_cart_key | default: "" }}';
-      var giftWrapKeyEscapedStr = $.escapeSelector(Shopify.Cart.GiftWrap.key);
+      Shopify.Cart.GiftWrap = (function () {
+          var _giftWrapKeyEscapedStr = null;
+          var _count = 0;
+
+          function setKey(k) {
+              this.key = k;
+              _giftWrapKeyEscapedStr = $.escapeSelector(this.key);
+          }
+          function init(key) {
+              this.setKey(key);
+              _count = this.count();
+          }
+          function count() {
+              var itemsInCart = 0;
+              var key = this.key;
+              // Count total qty in cart for items that are not the gift wrap product
+              $('input.{{ cart_item_class }}').each(function countItems() {
+                  console.log("this.id -> " + this.id);
+                  // If gift-wrap product is in cart, then don't count its quantity
+                  if (key && this.id.includes(key)) {
+                      console.log("gift-wrap cart key matched");
+                      return;
+                  }
+                  itemsInCart += (+this.value);
+                  console.log("Num items: " + itemsInCart);
+              });
+
+              return itemsInCart;
+          }
+          function updateGiftWrapCount() {
+              var itemsInCart = Shopify.Cart.GiftWrap.count();
+
+              // Update gift wrap quantity to match total items quantity
+              // The id changes from updates_<key> to quantity_<key> after cart refresh with Theme Narrative (bug)!!!
+              if (giftWrapKeyEscapedStr) {
+                  jQuery('#quantity_' + giftWrapKeyEscapedStr).val(itemsInCart);
+                  jQuery('#updates_' + giftWrapKeyEscapedStr).val(itemsInCart);
+              }
+              Shopify.Cart.GiftWrap.set(itemsInCart, $.noop);
+          }
+          // Parameterized the function
+          // Save gift-note
+          function set(numItems, callback) {
+              function defaultSuccess() { location.href = '/cart'; }
+              var done = (typeof callback === 'function') ? callback : defaultSuccess;
+              var itemsInCart = (typeof numItems === 'number') ? numItems : {{ items_in_cart }};
+              var note = jQuery('#gift-note').val();
+              jQuery.ajax({
+                    type: 'POST',
+                    url: '/cart/update.js',
+                    data: { updates: { {{ id }}: itemsInCart }, attributes: { 'gift-wrapping': true, 'gift-note': note } },
+                    dataType: 'json',
+                    success: done
+              });
+          }
+          // Parameterized the function
+          function remove(callback) {
+              function defaultSuccess() { location.href = '/cart'; }
+              var done = (typeof callback === 'function') ? callback : defaultSuccess;
+              jQuery.ajax({
+                    type: 'POST',
+                    url: '/cart/update.js',
+                    data: { updates: { {{ id }}: 0 }, attributes: { 'gift-wrapping': '' } },
+                    dataType: 'json',
+                    success: done
+              });
+          }
+
+          return {
+              key       : '{{ gift_wraps_in_cart_key | default: "" }}',
+              costModel : '{{ settings.gift_wrapping_cost_model | default: "per_item" }}',
+              setKey    : setKey,
+              count     : count,
+              updateGiftWrapCount: updateGiftWrapCount,
+              set       : set,
+              remove    : remove,
+              init      : init
+          };
+      })(); //IIFE returning a GiftWrap object
 
       // Observer to monitor nodes addition/removal in cart drawer's item list
       // and update the GW count accordingly
@@ -77,66 +151,6 @@
               Shopify.Cart.GiftWrap.updateGiftWrapCount();
           }
       });
-
-      Shopify.Cart.GiftWrap.count = function () {
-          var itemsInCart = 0;
-          // Count total qty in cart for items that are not the gift wrap product
-          $('input.{{ cart_item_class }}').each(function countItems() {
-              console.log("this.id -> " + this.id);
-              // If gift-wrap product is in cart, then don't count its quantity
-              if (Shopify.Cart.GiftWrap.key && this.id.includes(Shopify.Cart.GiftWrap.key)) {
-                  console.log("gift-wrap cart key matched");
-                  return;
-              }
-              itemsInCart += (+this.value);
-              console.log("Num items: " + itemsInCart);
-          });
-
-          return itemsInCart;
-      };
-
-      Shopify.Cart.GiftWrap.updateGiftWrapCount = function () {
-          var itemsInCart = Shopify.Cart.GiftWrap.count();
-
-          // Update gift wrap quantity to match total items quantity
-          // The id changes from updates_<key> to quantity_<key> after cart refresh with Theme Narrative (bug)!!!
-          if (giftWrapKeyEscapedStr) {
-              jQuery('#quantity_' + giftWrapKeyEscapedStr).val(itemsInCart);
-              jQuery('#updates_' + giftWrapKeyEscapedStr).val(itemsInCart);
-          }
-          Shopify.Cart.GiftWrap.set(itemsInCart, $.noop);
-      };
-
-      // Dien
-      // Parameterized the function
-      // Save gift-note
-      Shopify.Cart.GiftWrap.set = function(numItems, callback) {
-          function defaultSuccess() { location.href = '/cart'; }
-          var done = (typeof callback === 'function') ? callback : defaultSuccess;
-          var itemsInCart = (typeof numItems === 'number') ? numItems : {{ items_in_cart }};
-          var note = jQuery('#gift-note').val();
-          jQuery.ajax({
-              type: 'POST',
-              url: '/cart/update.js',
-              data: { updates: { {{ id }}: itemsInCart }, attributes: { 'gift-wrapping': true, 'gift-note': note } },
-          dataType: 'json',
-          success: done
-          });
-      };
-
-      // Dien
-      // Parameterized the function
-      Shopify.Cart.GiftWrap.remove = function(callback) {
-          function defaultSuccess() { location.href = '/cart'; }
-          var done = (typeof callback === 'function') ? callback : defaultSuccess;
-          jQuery.ajax({
-              type: 'POST',
-              url: '/cart/update.js',
-              data: { updates: { {{ id }}: 0 }, attributes: { 'gift-wrapping': '' } },
-          dataType: 'json',
-          success: done
-          });
-      };
 
       {% unless settings.show_cart_drawer %}
           // If we have nothing but gift-wrap items in the cart.
@@ -187,8 +201,7 @@
                   var newTotalDiscountSpan = stubHTML[2];
 
                   // Save gift wrap cart item key
-                  Shopify.Cart.GiftWrap.key = giftWrapLineItem.id;
-                  giftWrapKeyEscapedStr = $.escapeSelector(Shopify.Cart.GiftWrap.key);
+                  Shopify.Cart.GiftWrap.setKey(giftWrapLineItem.id);
 
                   // Add GW item to Cart Drawer in DOM
                   jQuery('{{ cart_container_selector }}').prepend(giftWrapLineItem);
@@ -203,8 +216,7 @@
 
           function removeGWItemfromDOM() {
               giftWrapKeyEscapedStr && jQuery('#' + giftWrapKeyEscapedStr + ' {{ cart_remove_btn_selector }}').trigger('click');
-              Shopify.Cart.GiftWrap.key = '';
-              giftWrapKeyEscapedStr = '';
+              Shopify.Cart.GiftWrap.setKey('');
           }
 
           function updateGWQuantity() {
@@ -218,8 +230,7 @@
               // Note: this does NOT trigger the "change" event on the GW checkbox
               jQuery('#{{ gift_wrap_checkbox_id }}').prop('checked', false);
               Shopify.Cart.GiftWrap.remove($.noop);
-              Shopify.Cart.GiftWrap.key = '';
-              giftWrapKeyEscapedStr = '';
+              Shopify.Cart.GiftWrap.setKey('');
           }
 
           // Attention: Call this only when GW item is indeed present in the Cart

@@ -80,6 +80,7 @@
       };
 
       Shopify.Cart.DOM.addGWItem = function (inputChangeCb, removeBtnCb) {
+          var self = this;
           // Retrieves "Gift Wrap Stub" page from the "Gift Wrapping" menu.
           // The page contains the generated HTML node of the Gift Wrap line item to be inserted in the Cart Drawer.
           // Also includes elements with the updated subtotal and discount.
@@ -87,28 +88,28 @@
               url: '{{ linklists.gift-wrapping.links[1].url }}',
               dataType: "html"
           })
-              .done(function insertGWItemtoCartDrawer(htmlStr) {
-                  var stubHTML = jQuery(htmlStr);
-                  var giftWrapLineItem = stubHTML[0];
-                  var newSubtotalSpan = stubHTML[1];
-                  var newTotalDiscountSpan = stubHTML[2];
+          .done(function insertGWItemToCartDrawer(htmlStr) {
+              var stubHTML = jQuery(htmlStr);
+              var giftWrapLineItem = stubHTML[0];
+              var newSubtotalSpan = stubHTML[1];
+              var newTotalDiscountSpan = stubHTML[2];
 
-                  // Save gift wrap cart item key
-                  Shopify.Cart.GiftWrap.DOM.setKey(giftWrapLineItem.id);
+              // Save gift wrap cart item key
+              Shopify.Cart.GiftWrap.DOM.init(giftWrapLineItem.id);
 
-                  // Add GW item to Cart Drawer in DOM
-                  jQuery('{{ cart_container_selector }}').prepend(giftWrapLineItem);
+              // Add GW item to Cart Drawer in DOM
+              jQuery('{{ cart_container_selector }}').prepend(giftWrapLineItem);
 
-                  // Update total and discount values in DOM
-                  jQuery('{{ cart_subtotal_selector }}').text(newSubtotalSpan.innerText);
-                  jQuery('{{ cart_discount_selector }}').text(newTotalDiscountSpan.innerText);
+              // Update total and discount values in DOM
+              jQuery('{{ cart_subtotal_selector }}').text(newSubtotalSpan.innerText);
+              jQuery('{{ cart_discount_selector }}').text(newTotalDiscountSpan.innerText);
 
-                  Shopify.Cart.DOM.attachSensors(inputChangeCb, removeBtnCb);
-              });
+              self.attachSensors(inputChangeCb, removeBtnCb);
+          });
       };
 
       Shopify.Cart.DOM.removeGWItem = function () {
-          Shopify.Cart.DOM.removeSensors();
+          this.removeSensors();
           var key = Shopify.Cart.GiftWrap.DOM.getKeyEscaped();
           // Trigger Remove button to delete Gift Wrap item
           key && jQuery('#' + key + ' {{ cart_remove_btn_selector }}').trigger('click');
@@ -140,6 +141,7 @@
 
       Shopify.Cart.GiftWrap = (function () {
           var _quantity = 0;
+          const _costModel = '{{ settings.gift_wrapping_cost_model | default: "per_item" }}';
 
           function getQuantity() {
               return _quantity;
@@ -148,6 +150,9 @@
               if (typeof q === 'number') {
                   _quantity = q;
               }
+          }
+          function getCostModel() {
+              return _costModel;
           }
           function init(quantity) {
               _setQuantity(quantity);
@@ -182,11 +187,11 @@
           }
 
           return {
-              costModel : '{{ settings.gift_wrapping_cost_model | default: "per_item" }}',
-              getQuantity: getQuantity,
-              set       : set,
-              remove    : remove,
-              init      : init
+              getCostModel: getCostModel,
+              getQuantity : getQuantity,
+              set         : set,
+              remove      : remove,
+              init        : init
           };
       })(); //IIFE returning a GiftWrap object
 
@@ -197,7 +202,7 @@
           function setKey(k) {
               if (typeof k !== 'undefined' && k !== null) {
                   _key = String(k);
-                  _keyEscaped = $.escapeSelector(_key);
+                  _keyEscaped = jQuery.escapeSelector(_key);
               }
           }
           function getKey() {
@@ -207,13 +212,13 @@
               return _keyEscaped;
           }
           function init(key) {
-              setKey(key);
+              this.setKey(key);
           }
           function reset() {
-              setKey('');
+              this.setKey('');
           }
           function setVal(value){
-              var key = getKeyEscaped();
+              var key = this.getKeyEscaped();
               // Update gift wrap quantity to match total items quantity
               // The id changes from updates_<key> to quantity_<key> after cart refresh with Theme Narrative (bug)!!!
               if (key) {
@@ -224,10 +229,10 @@
           return {
               init  : init,
               reset : reset,
+              setVal: setVal,
               setKey: setKey,
               getKey: getKey,
-              getKeyEscaped: getKeyEscaped,
-              setVal: setVal
+              getKeyEscaped: getKeyEscaped
           }
       })(); //IIFE returning GiftWrap.DOM object
 
@@ -275,8 +280,9 @@
 
           function updateGiftWrapQuantity() {
               var itemsInCart = Shopify.Cart.countNoGW();
-              Shopify.Cart.GiftWrap.DOM.setVal(itemsInCart);
-              Shopify.Cart.GiftWrap.set(itemsInCart, $.noop);
+              Shopify.Cart.GiftWrap.set(itemsInCart, function () {
+                Shopify.Cart.GiftWrap.DOM.setVal(itemsInCart);
+              });
           }
 
           function observeItemList(mutations) {
@@ -291,9 +297,7 @@
                   return false;
               });
 
-              if (changed) {
-                  updateGiftWrapQuantity();
-              }
+              changed && updateGiftWrapQuantity();
           }
 
           Shopify.Cart.DOM.init(observeItemList);
@@ -313,6 +317,7 @@
               removeGiftWrapCb = Shopify.Cart.DOM.removeGWItem;
           }
 
+          // When Gift Wrap checkbox status changes
           jQuery('#{{ gift_wrap_checkbox_id }}').change(function checkboxCb() {
               if (jQuery(this).prop('checked')) {
                   Shopify.Cart.GiftWrap.set(Shopify.Cart.countNoGW(), setGiftWrapCb);

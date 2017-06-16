@@ -271,7 +271,7 @@
                       Shopify.Cart.GiftWrap.DOM.setVal(itemsInCart);
                   });
               }
-              else {
+              else { // No product item in cart, remove GW item from cart
                   let gwSelector = Shopify.Cart.GiftWrap.DOM.getKeyEscaped();
                   gwSelector && jQuery('#' + gwSelector + ' {{ cart_remove_btn_selector }}').trigger('click');
               }

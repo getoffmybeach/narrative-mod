@@ -146,16 +146,18 @@
                   function defaultSuccess() { location.href = '/cart'; }
                   var note = jQuery('#gift-note').val();
                   var done = (typeof callback === 'function') ? callback : defaultSuccess;
-                  _setQuantity(numItems);
                   jQuery.ajax({
                       type: 'POST',
                       url: '/cart/update.js',
                       data: {
-                          updates: { {{ id }}: _quantity },
+                          updates: { {{ id }}: numItems },
                           attributes: { 'gift-wrapping': true, 'gift-note': note }
                       },
                       dataType: 'json',
-                      success: done
+                      success: function() {
+                          _setQuantity(numItems);
+                          done();
+                      }
                   });
               }
 
@@ -163,7 +165,6 @@
               function remove(callback) {
                   function defaultSuccess() { location.href = '/cart'; }
                   var done = (typeof callback === 'function') ? callback : defaultSuccess;
-                  _setQuantity(0);
                   jQuery.ajax({
                       type: 'POST',
                       url: '/cart/update.js',
@@ -172,7 +173,10 @@
                           attributes: { 'gift-wrapping': '' }
                       },
                       dataType: 'json',
-                      success: done
+                      success: function () {
+                          _setQuantity(0);
+                          done();
+                      }
                   });
               }
 

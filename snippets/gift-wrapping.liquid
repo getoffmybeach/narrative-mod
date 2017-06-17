@@ -353,7 +353,7 @@
 
           var setGiftWrapCb = null;
           var removeGiftWrapCb = null;
-          // If cart drawer enabled, provide callbacks to prevent GiftWrap.set()/remove() from loading cart page after AJAX call
+          // If cart drawer enabled, provide callbacks to prevent GiftWrap.set/remove from loading cart page after AJAX call
           if ('{{ settings.show_cart_drawer | default: "false" }}' === 'true') {
               setGiftWrapCb = function () {
                   Shopify.Cart.DOM.addGWItem(insertGWItemToCartDrawer);

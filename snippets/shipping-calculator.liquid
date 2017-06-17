@@ -2,7 +2,7 @@
 
 <div id="shipping-calculator">
 
-  <h3 {% if settings.show_cart_drawer %}class="h4"{% endif %}>{{ settings.shipping_calculator_heading | default: 'Get shipping estimates' }}</h3>
+  <h3 class="h4">{{ settings.shipping_calculator_heading | default: 'Get shipping estimates' }}</h3>
 
   <div>
     <p class="field">
@@ -196,6 +196,7 @@
         var observer = new MutationObserver(function observeZipError(mutations) {
             mutations.forEach(function inspectMutation(m) {
                 if (m.type === 'childList') {
+                    m.target.scrollIntoView(false);
                     var errorEl = jQuery(m.target.querySelector('#shipping-rates-feedback.error'));
                     if (/zip/i.test(errorEl.text())) {
                         console.log('Highlighting zipcode field...');
@@ -228,7 +229,5 @@
             jQuery('#shipping-rates-feedback').removeClass('transitioning');
         });*/
     });
-
 </script>
-
 {% endunless %}

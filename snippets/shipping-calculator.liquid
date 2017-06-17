@@ -2,7 +2,7 @@
 
 <div id="shipping-calculator">
 
-  <h3>{{ settings.shipping_calculator_heading | default: 'Get shipping estimates' }}</h3>
+  <h3 {% if settings.show_cart_drawer %}class="h4"{% endif %}>{{ settings.shipping_calculator_heading | default: 'Get shipping estimates' }}</h3>
 
   <div>
     <p class="field">

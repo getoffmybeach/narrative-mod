@@ -1,6 +1,6 @@
 {% unless settings.shipping_calculator == 'Disabled' %}
 
-<div id="shipping-calculator">
+<div id="shipping-calculator" class="cart-drawer__shipping-calculator-container">
 
   <h3 class="h4">{{ settings.shipping_calculator_heading | default: 'Get shipping estimates' }}</h3>
 
@@ -28,6 +28,12 @@
 
 <style>
     /* TODO: Revise class names. Use BEM or SMACSS */
+    .cart-drawer__shipping-calculator-container {
+        margin-top: 50px;
+    }
+    #wrapper-response {
+        margin-top: 5px;
+    }
     #address_zip:focus.address_zip__input--error {
         outline-color: #eb4f47;
     }

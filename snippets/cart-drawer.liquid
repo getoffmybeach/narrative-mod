@@ -116,7 +116,7 @@
           <!-- Dien -->
           <!-- Only show GW option if enabled in settings -->
           {% if settings.show_gift_wrapping %}
-            <div class="cart-drawer__item">
+            <div class="cart-drawer__item cart-drawer__gift-wrap-container">
               {% include 'gift-wrapping' %}
             </div>
           {% endif %}
@@ -128,6 +128,11 @@
             </div>
           {% endif %}
 
+          {% unless settings.shipping_calculator == 'Disabled' %}
+          <div class="cart-drawer__item">
+            {% include 'shipping-calculator' %}
+          </div>
+          {% endunless %}
         </div>
       </div>
     </div>

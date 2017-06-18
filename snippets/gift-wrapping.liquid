@@ -151,7 +151,7 @@
                       url: '/cart/update.js',
                       data: {
                           updates: { {{ id }}: numItems },
-                          attributes: { 'gift-wrapping': true, 'gift-note': note }
+                          attributes: { 'gift-wrapping': 'true', 'gift-note': note }
                       },
                       dataType: 'json',
                       success: function() {

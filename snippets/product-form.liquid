@@ -1,3 +1,6 @@
+{% comment %}
+Dien: Modified to support custom line item properties
+{% endcomment %}
 <form class="product-form" action="/cart/add" method="post" enctype="multipart/form-data">
   {% unless product.variants.size == 1 and product.options.size == 1 and product.options.first == 'Title' and product.variants.first.title == 'Default Title' %}
     {% for option in product.options_with_values %}
@@ -45,6 +48,10 @@
   ------------------------------------------------------------------------------
   {% endcomment %}
 
+
+{% comment %}
+  Dien: remove below!
+{% endcomment %}
 {% comment %}
   {% unless section.settings.custom_required_property == empty %}
     <div class="product-form__item">
@@ -59,17 +66,27 @@
     </div>
   {% endunless %}
 {% endcomment %}
-{% comment %}
+  
+  {% comment %}
+  Dien
   Custom Property Blocks
-  To do: rename the class names.
-{% endcomment %}
+  TODO: rename the class names.
+  {% endcomment %}
   {% unless section.blocks == empty %}
     {% for block in section.blocks %}
       <div class="product-form__item" {{ block.shopify_attributes }}>
     {% unless block.settings.custom_property_name == empty %}
-        <label class="product-form__custom-property-label" for="{{ block-type }}-{{ block.id }}-{{ section.id }}">{{ block.settings.custom_property_name | strip_html }}</label>
+        <label class="product-form__custom-property-label" for="{{ block.type }}-{{ block.id }}-{{ section.id }}">{{ block.settings.custom_property_name | strip_html }}</label>
     {% endunless %}
-        <input {% if block.settings.custom_property_required %} required {% endif %} class="product-form__custom-property-input" type="{{ block.settings.custom_property_type }}" id="{{ block-type }}-{{ block.id }}-{{ section.id }}" name="properties[{{ block.settings.custom_property_name | strip_html }}]">
+        <input {% if block.settings.custom_property_required %} required {% endif %} class="product-form__custom-property-input" type="{{ block.settings.custom_property_type }}" id="{{ block.type }}-{{ block.id }}-{{ section.id }}" name="properties[{{ block.settings.custom_property_name | strip_html }}]"
+        {% if block.settings.custom_property_type == 'number' %}
+        {% case block.settings.custom_property_number_range %}
+          {% when 'positive' %}min="0"
+          {% when 'positive_no_zero' %}min="1"
+          {% when 'all_integers' %}
+          {% else %}
+        {% endcase %}
+        {% endif %}>
       </div>
     {% endfor %}
   {% endunless %}

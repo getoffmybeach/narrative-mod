@@ -42,42 +42,24 @@ Dien: Modified to support custom line item properties
       <input class="product-form__quantity-input" type="number" id="Quantity-{{ section.id }}" name="quantity" value="1" min="1" pattern="[0-9]*">
     </div>
   {% endif %}
+
   {% comment %}
+  Dien
   ------------------------------------------------------------------------------
   Custom Properties
   ------------------------------------------------------------------------------
-  {% endcomment %}
-
-
-{% comment %}
-  Dien: remove below!
-{% endcomment %}
-{% comment %}
-  {% unless section.settings.custom_required_property == empty %}
-    <div class="product-form__item">
-      <label class="product-form__custom-property-label" for="Custom-required-{{ section.id }}">{{ section.settings.custom_required_property }}</label>
-      <input required class="product-form__custom-property-input" type="number" id="Custom-required-{{ section.id }}" name="{{ section.settings.custom_required_property | handleize }}">
-    </div>
-  {% endunless %}
-  {% unless section.settings.custom_optional_property == empty %}
-    <div class="product-form__item">
-      <label class="product-form__custom-property-label" for="Custom-optional-{{ section.id }}">{{ section.settings.custom_optional_property }}</label>
-      <input class="product-form__custom-property-input" type="file" id="Custom-optional-{{ section.id }}" name="{{ section.settings.custom_optional_property | handleize }}">
-    </div>
-  {% endunless %}
-{% endcomment %}
-  
-  {% comment %}
-  Dien
-  Custom Property Blocks
-  TODO: rename the class names.
+  TODO: rename the class names. (?)
   {% endcomment %}
   {% unless section.blocks == empty %}
     {% for block in section.blocks %}
       <div class="product-form__item" {{ block.shopify_attributes }}>
-    {% unless block.settings.custom_property_name == empty %}
+      {% if block.settings.custom_property_type == 'checkbox' %}
+        <input {% if block.settings.custom_property_required %} required {% endif %} class="product-form__custom-property-input" type="{{ block.settings.custom_property_type }}" id="{{ block.type }}-{{ block.id }}-{{ section.id }}" name="properties[{{ block.settings.custom_property_name | strip_html }}]" >
+      {% endif %}
+        {% if block.settings.custom_property_name != empty %}
         <label class="product-form__custom-property-label" for="{{ block.type }}-{{ block.id }}-{{ section.id }}">{{ block.settings.custom_property_name | strip_html }}</label>
-    {% endunless %}
+      {% endif %}
+      {% if block.settings.custom_property_type != 'checkbox' %}
         <input {% if block.settings.custom_property_required %} required {% endif %} class="product-form__custom-property-input" type="{{ block.settings.custom_property_type }}" id="{{ block.type }}-{{ block.id }}-{{ section.id }}" name="properties[{{ block.settings.custom_property_name | strip_html }}]"
         {% if block.settings.custom_property_type == 'number' %}
         {% case block.settings.custom_property_number_range %}
@@ -86,10 +68,12 @@ Dien: Modified to support custom line item properties
           {% when 'all_integers' %}
           {% else %}
         {% endcase %}
-        {% endif %}>
+        {% endif %} >
+      {% endif %}
       </div>
     {% endfor %}
   {% endunless %}
+
   {% comment %}
   ------------------------------------------------------------------------------
   Cart

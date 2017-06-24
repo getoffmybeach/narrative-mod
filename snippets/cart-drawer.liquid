@@ -66,9 +66,11 @@
                     {%- assign itemProperties = item.properties -%}
                   {% endif %}
 
-                  {% for property in itemProperties %}
-                    {% for p in itemProperties %}
-                    <li class="cart-drawer__item-property{% if property == 'template' %} ajax-cart__template{% endif %}{% if p.last == blank %} visually-hidden{% endif %}" data-cart-item-property>
+                  {% comment %}
+                    Dien: fixed bug by removing second loop through itempProperties!
+                  {% endcomment %}
+                  {% for p in itemProperties %}
+                    <li class="cart-drawer__item-property{% if p == 'template' %} ajax-cart__template{% endif %}{% if p.last == blank %} visually-hidden{% endif %}" data-cart-item-property>
                         {{ p.first }}:
 
                         {% comment %}
@@ -79,8 +81,7 @@
                         {% else %}
                           {{ p.last }}
                         {% endif %}
-                      </li>
-                    {% endfor %}
+                    </li>
                   {% endfor %}
                 </ul>
 

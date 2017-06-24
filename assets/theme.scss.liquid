@@ -1032,6 +1032,7 @@ input[type='tel'],
 input[type='password'],
 input[type='search'],
 input[type='number'],
+input[type='checkbox'],
 input[type='file'],
 textarea,
 select {
@@ -1078,10 +1079,14 @@ input[type='number']::-webkit-outer-spin-button {
   opacity: 1;
 }
 
+/* DIEN */
 input[type='checkbox'],
 input[type='radio'] {
   display: inline-block;
   margin-right: 5px;
+  width: auto;
+  -webkit-appearance: checkbox;
+  -moz-appearance: checkbox;
 }
 
 textarea {
@@ -5282,13 +5287,13 @@ $image-bar-placeholder-border-color: rgba($color-body-text, 0.25);
 input[type='number'].product-form__quantity-input,
 input[type='number'].product-form__custom-property-input,
 input[type='text'].product-form__custom-property-input,
-input[type='file'].product-form__custom-property-input {
+input[type='file'].product-form__custom-property-input,
+input[type='checkbox'].product-form__custom-property-input {
   margin-bottom: 0;
 }
 
 .single-option-selector__label,
-.product-form__quantity-label,
-.product-form__custom-property-label {
+.product-form__quantity-label {
   display: inline-block;
   position: absolute;
   padding: ($gutter / 2) $gutter;
@@ -5309,6 +5314,19 @@ input[type='file'].product-form__custom-property-input {
   @include media-query($small) {
     font-size: rem(16);
   }
+}
+
+/* DIEN */
+.product-form__custom-property-label,
+.product-form__custom-property-checkbox-label {
+  @extend .product-form__quantity-label;
+  pointer-events: auto;
+  &::after {
+    content: '';
+  }
+}
+.product-form__custom-property-checkbox-label {
+  position: static;
 }
 
 .single-option-selector__label--hidden,

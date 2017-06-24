@@ -270,6 +270,9 @@
   </script>
 </div>
 
+{% comment %}
+Dien: Added blocks.
+{% endcomment %}
 {% schema %}
 {
   "name": "Product pages",
@@ -314,7 +317,7 @@
         {
           "type": "text",
           "id": "custom_property_name",
-          "label": "Property Name",
+          "label": "Name",
           "default": "Property1"
         },
         {
@@ -322,17 +325,30 @@
           "id": "custom_property_type",
           "label": "Type",
           "options": [
-            { "value": "text", "label": "Text"},
-            { "value": "number", "label": "Number"},
-            { "value": "file", "label": "File"},
-            { "value": "checkbox", "label": "Checkbox"}
+            { "value": "text", "label": "Text" },
+            { "value": "number", "label": "Number" },
+            { "value": "file", "label": "File" },
+            { "value": "checkbox", "label": "Checkbox" }
           ],
+          "info": "Type File only works with cart page.",
           "default": "text"
         },
         {
-        "type": "checkbox",
-        "id": "custom_property_required",
-        "label": "Required"
+          "type": "select",
+          "id": "custom_property_number_range",
+          "label": "Number Range",
+          "options": [
+            { "value": "positive_no_zero", "label": "Positive values, except zero" },
+            { "value": "positive", "label": "Positive values, including zero" },
+            { "value": "all_integers", "label": "Positive and negative values, including zero" }
+          ],
+          "info": "Applicable only for type Number.",
+          "default": "positive_no_zero"
+        },
+        {
+          "type": "checkbox",
+          "id": "custom_property_required",
+          "label": "Required"
         }
       ]
     }

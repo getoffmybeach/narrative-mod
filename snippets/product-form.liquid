@@ -52,25 +52,32 @@ Dien: Modified to support custom line item properties
   {% endcomment %}
   {% unless section.blocks == empty %}
     {% for block in section.blocks %}
+      {% if block.type == 'custom-property' %}
       <div class="product-form__item" {{ block.shopify_attributes }}>
-      {% if block.settings.custom_property_type == 'checkbox' %}
-        <input {% if block.settings.custom_property_required %} required {% endif %} class="product-form__custom-property-input" type="{{ block.settings.custom_property_type }}" id="{{ block.type }}-{{ block.id }}-{{ section.id }}" name="properties[{{ block.settings.custom_property_name | strip_html }}]" >
-      {% endif %}
-        {% if block.settings.custom_property_name != empty %}
-        <label class="product-form__custom-property-label" for="{{ block.type }}-{{ block.id }}-{{ section.id }}">{{ block.settings.custom_property_name | strip_html }}</label>
-      {% endif %}
-      {% if block.settings.custom_property_type != 'checkbox' %}
-        <input {% if block.settings.custom_property_required %} required {% endif %} class="product-form__custom-property-input" type="{{ block.settings.custom_property_type }}" id="{{ block.type }}-{{ block.id }}-{{ section.id }}" name="properties[{{ block.settings.custom_property_name | strip_html }}]"
-        {% if block.settings.custom_property_type == 'number' %}
-        {% case block.settings.custom_property_number_range %}
-          {% when 'positive' %}min="0"
-          {% when 'positive_no_zero' %}min="1"
-          {% when 'all_integers' %}
-          {% else %}
-        {% endcase %}
-        {% endif %} >
-      {% endif %}
+        {% if block.settings.custom_property_type == 'checkbox' %}
+          <p class="line-item-property__field" {{ block.shopify_attributes }}>
+            <input type="hidden" name="properties[{{ block.settings.custom_property_name | strip_html }}]" value="No">
+            <input type="checkbox" {% if block.settings.custom_property_required %} required {% endif %} class="product-form__custom-property-input" value="Yes" id="{{ block.type }}-{{ block.id }}-{{ section.id }}" name="properties[{{ block.settings.custom_property_name | strip_html }}]" >
+          {% if block.settings.custom_property_name != empty %}
+            <label class="product-form__custom-property-checkbox-label" for="{{ block.type }}-{{ block.id }}-{{ section.id }}">{{ block.settings.custom_property_name | strip_html }}</label>
+          {% endif %}
+          </p>
+        {% else %}
+          {% if block.settings.custom_property_name != empty %}
+            <label class="product-form__custom-property-label" for="{{ block.type }}-{{ block.id }}-{{ section.id }}">{{ block.settings.custom_property_name | strip_html }}</label>
+          {% endif %}
+          <input {% if block.settings.custom_property_required %} required {% endif %} class="product-form__custom-property-input" type="{{ block.settings.custom_property_type }}" id="{{ block.type }}-{{ block.id }}-{{ section.id }}" name="properties[{{ block.settings.custom_property_name | strip_html }}]"
+            {% if block.settings.custom_property_type == 'number' %}
+              {% case block.settings.custom_property_number_range %}
+                {% when 'positive' %}min="0"
+                {% when 'positive_no_zero' %}min="1"
+                {% when 'all_integers' %}
+                {% else %}
+              {% endcase %}
+            {% endif %} >
+        {% endif %}
       </div>
+      {% endif %}
     {% endfor %}
   {% endunless %}
 

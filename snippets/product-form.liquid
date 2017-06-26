@@ -1,6 +1,21 @@
 {% comment %}
 Dien: Modified to support custom line item properties
 {% endcomment %}
+<style>
+    aside.product__tooltip-quantity-in-cart {
+        width: 2em;
+        height: 2em;
+        position: absolute;
+        top: -1em;
+        right: -1em;
+        z-index: 999;
+        display: inline-block;
+        border-radius: 50%;
+        background-color: orange;
+        text-align: center;
+        line-height: 2;
+    }
+</style>
 <form class="product-form" action="/cart/add" method="post" enctype="multipart/form-data">
   {% unless product.variants.size == 1 and product.options.size == 1 and product.options.first == 'Title' and product.variants.first.title == 'Default Title' %}
     {% for option in product.options_with_values %}
@@ -96,7 +111,36 @@ Dien: Modified to support custom line item properties
         {% endunless %}
       </span>
       <span class="secondary-text" aria-hidden=true data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
+      <aside class="product__tooltip-quantity-in-cart">-</aside>
     </button>
     <p class="product__notification text-small text-center" data-cart-notification></p>
   </div>
 </form>
+<script>
+    jQuery(function updateTooltip($) {
+        var productId = {{ product.id | default: 0 }};
+        $.ajax({
+            method: 'GET',
+            url: '/cart.js',
+            dataType: 'json'
+        })
+        .done(function inspectCart(cart) {
+            console.dir(cart);
+            if (cart.item_count > 0) {
+                var foundItems = cart.items.filter(function findProduct(item) {
+                    return (item.product_id === productId);
+                });
+
+                if (foundItems.length) {
+                    var total = foundItems.reduce(function countQuantity(subtotal, currentItem) {
+                        return (subtotal + currentItem.quantity);
+                    }, 0);
+                    $('aside.product__tooltip-quantity-in-cart').text(total);
+                }
+            }
+        })
+        .fail(function ajaxErrorHandler(jqXHR, textStatus) {
+            console.log('Failed GET cart.js with status: ' + textStatus);
+        })
+    });
+</script>

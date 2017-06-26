@@ -94,6 +94,7 @@
               // The page contains the generated HTML node of the Gift Wrap line item to be inserted in the Cart Drawer.
               // It also includes elements with the updated subtotal and discount.
               jQuery.ajax({
+                  method: 'GET',
                   url: '{{ linklists.gift-wrapping.links[1].url }}',
                   dataType: "html"
               })
@@ -403,7 +404,7 @@
               var note      = jQuery(this).val();
               console.log('Saving GW note...');
               jQuery.ajax({
-                  type: 'POST',
+                  method: 'POST',
                   url: '/cart/update.js',
                   data: { updates: { {{ id }}: quantity }, attributes: { 'gift-note': note } },
                 dataType: 'json'

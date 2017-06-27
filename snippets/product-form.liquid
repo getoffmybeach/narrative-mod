@@ -9,11 +9,13 @@ Dien: Modified to support custom line item properties
         top: -1em;
         right: -1em;
         z-index: 999;
-        display: inline-block;
         border-radius: 50%;
         background-color: orange;
         text-align: center;
         line-height: 2;
+    }
+    .completely-hidden {
+        display: none;
     }
 </style>
 <form class="product-form" action="/cart/add" method="post" enctype="multipart/form-data">
@@ -111,36 +113,60 @@ Dien: Modified to support custom line item properties
         {% endunless %}
       </span>
       <span class="secondary-text" aria-hidden=true data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
-      <aside class="product__tooltip-quantity-in-cart">-</aside>
+      <aside class="product__tooltip-quantity-in-cart hidden completely-hidden">-</aside>
     </button>
     <p class="product__notification text-small text-center" data-cart-notification></p>
   </div>
 </form>
 <script>
-    jQuery(function updateTooltip($) {
-        var productId = {{ product.id | default: 0 }};
-        $.ajax({
-            method: 'GET',
-            url: '/cart.js',
-            dataType: 'json'
-        })
-        .done(function inspectCart(cart) {
-            console.dir(cart);
-            if (cart.item_count > 0) {
-                var foundItems = cart.items.filter(function findProduct(item) {
-                    return (item.product_id === productId);
-                });
+    /* DIEN: "Quantity in cart" tooltip */
+    jQuery(function ($) {
 
-                if (foundItems.length) {
-                    var total = foundItems.reduce(function countQuantity(subtotal, currentItem) {
-                        return (subtotal + currentItem.quantity);
-                    }, 0);
-                    $('aside.product__tooltip-quantity-in-cart').text(total);
+        function updateTooltip() {
+            var productId = {{ product.id | default: 0 }};
+            return ($.ajax({
+                method: 'GET',
+                url: '/cart.js',
+                dataType: 'json'
+            })
+            .done(function inspectCart(cart) {
+//                console.dir(cart);
+                if (cart.item_count > 0) {
+                    var foundItems = cart.items.filter(function findProduct(item) {
+                        return (item.product_id === productId);
+                    });
+
+                    var total = 0;
+                    for (let i = foundItems.length; --i >= 0; ) {
+                        total += foundItems[i].quantity;
+                    }
+
+                    if (total) {
+                        $('aside.product__tooltip-quantity-in-cart').removeClass('completely-hidden').text(total);
+                    }
+                    else {
+                        $('aside.product__tooltip-quantity-in-cart').addClass('completely-hidden').text('-');
+                    }
                 }
+            })
+            .fail(function ajaxErrorHandler(jqXHR, textStatus) {
+                console.log('Failed GET cart.js with status: ' + textStatus);
+            }));
+        }
+
+        updateTooltip();
+
+        // Listens to Ajax requests to cart.  Updates tooltip if necessary.
+        $(document).on('ajaxComplete.tooltip', function listenToCartAjax(event, request, setting) {
+            console.log('SETTING URL: ' + setting.url);
+            if (/cart\/update\.js/i.test(setting.url)) {
+                $(document).off('ajaxComplete.tooltip');
+                $.Callbacks().remove(listenToCartAjax);
+                console.log("Has callback: " + $.Callbacks().has(listenToCartAjax));
+                updateTooltip().always(function attachAjaxCompleteHandler() {
+                    $(document).on('ajaxComplete.tooltip', listenToCartAjax);
+                });
             }
-        })
-        .fail(function ajaxErrorHandler(jqXHR, textStatus) {
-            console.log('Failed GET cart.js with status: ' + textStatus);
-        })
+        });
     });
 </script>

@@ -124,15 +124,15 @@ Dien: Modified to support custom line item properties
 
         function updateTooltip() {
             var productId = {{ product.id | default: 0 }};
+            console.log('--> updateTooltip: perform AJAX ');
             return ($.ajax({
                 method: 'GET',
                 url: '/cart.js',
                 dataType: 'json'
             })
             .done(function inspectCart(cart) {
-//                console.dir(cart);
                 if (cart.item_count > 0) {
-                    var foundItems = cart.items.filter(function findProduct(item) {
+                    var foundItems = cart.items.filter(function findItems(item) {
                         return (item.product_id === productId);
                     });
 
@@ -141,6 +141,7 @@ Dien: Modified to support custom line item properties
                         total += foundItems[i].quantity;
                     }
 
+                    // Update the quantity tooltip
                     if (total) {
                         $('aside.product__tooltip-quantity-in-cart').removeClass('completely-hidden').text(total);
                     }
@@ -157,16 +158,21 @@ Dien: Modified to support custom line item properties
         updateTooltip();
 
         // Listens to Ajax requests to cart.  Updates tooltip if necessary.
-        $(document).on('ajaxComplete.tooltip', function listenToCartAjax(event, request, setting) {
-            console.log('SETTING URL: ' + setting.url);
-            if (/cart\/update\.js/i.test(setting.url)) {
-                $(document).off('ajaxComplete.tooltip');
-                $.Callbacks().remove(listenToCartAjax);
-                console.log("Has callback: " + $.Callbacks().has(listenToCartAjax));
+        console.log('[[ON]]: ajaxComplete -- outside listenToCartAjax');
+        jQuery(document).on('ajaxComplete.tooltip', function listenToCartAjax(event, request, setting) {
+            console.log('--> ajaxComplete Handler called. URL: ' + setting.url + ' ID: ' + setting.requestId);
+            if (/cart\/(?:update|add|change|clear)/i.test(setting.url)) {
+                console.log('[[OFF]]: ajaxComplete -- inside listenToCartAjax');
+                jQuery(document).off('ajaxComplete.tooltip');
+//                let id = Math.floor(Math.random() * 10001);
                 updateTooltip().always(function attachAjaxCompleteHandler() {
-                    $(document).on('ajaxComplete.tooltip', listenToCartAjax);
+                    console.log('[[OFF]]: ajaxComplete -- inside attachAjaxCompleteHandler');
+                    jQuery(document).off('ajaxComplete.tooltip');
+                    console.log('[[ON]]: ajaxComplete -- inside attachAjaxCompleteHandler');
+                    jQuery(document).on('ajaxComplete.tooltip', listenToCartAjax);
                 });
             }
         });
     });
+    /* TODO:  Add tooltip to all .product__add-to-cart-button */
 </script>

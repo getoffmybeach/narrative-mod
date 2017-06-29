@@ -2,6 +2,9 @@
 Dien: Modified to support custom line item properties
 {% endcomment %}
 <style>
+    .product__add-to-cart-container {
+        position: relative;
+    }
     aside.product__tooltip-quantity-in-cart {
         width: 2em;
         height: 2em;
@@ -11,8 +14,12 @@ Dien: Modified to support custom line item properties
         z-index: 999;
         border-radius: 50%;
         background-color: orange;
-        text-align: center;
+        color: #fff;
+        font-size: 1.2rem;
+        font-weight: 700;
         line-height: 2;
+        text-align: center;
+        cursor: default;
     }
     .completely-hidden {
         display: none;
@@ -102,25 +109,34 @@ Dien: Modified to support custom line item properties
   ------------------------------------------------------------------------------
   Cart
   ------------------------------------------------------------------------------
+  DIEN:
+    Added "tooltip" indicating quantity of viewed product already in cart.
+    Note: An extra div of class product_add-to-cart-container was added as parent of both the button and the tooltip.
+    This allows the tooltip to be absolutely positioned to the top-right corner of container, which has the same dimensions as the button's.
+    So the tooltip will always apprear on the same corner of the button.
+    Another option is to have the tooltip as a child of button but the effects on mouse events and outlining on focus make it less ideal.
+    Example: hovering on the tooltip would highlight the button, even though visually, part of the tooltip appears outside the button.
   {% endcomment %}
   <div class="product__add-to-cart">
-    <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite"{% unless current_variant.available %} disabled="true"{% endunless %} aria-live="polite">
-      <span class="primary-text" aria-hidden=false data-cart-primary-submit-text>
-        {% unless current_variant.available %}
-          {{ 'products.product.sold_out' | t }}
-        {% else %}
-          {{ 'products.product.add_to_cart' | t }}
-        {% endunless %}
-      </span>
-      <span class="secondary-text" aria-hidden=true data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
-      <aside class="product__tooltip-quantity-in-cart hidden completely-hidden">-</aside>
-    </button>
+    <div class="product__add-to-cart-container">
+        <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite"{% unless current_variant.available %} disabled="true"{% endunless %} aria-live="polite">
+          <span class="primary-text" aria-hidden=false data-cart-primary-submit-text>
+            {% unless current_variant.available %}
+              {{ 'products.product.sold_out' | t }}
+            {% else %}
+              {{ 'products.product.add_to_cart' | t }}
+            {% endunless %}
+          </span>
+          <span class="secondary-text" aria-hidden=true data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
+        </button>
+        <aside class="product__tooltip-quantity-in-cart hidden completely-hidden">-</aside>
+    </div>
     <p class="product__notification text-small text-center" data-cart-notification></p>
   </div>
 </form>
 <script>
     /* DIEN: "Quantity in cart" tooltip */
-    jQuery(function ($) {
+    jQuery(function quantityTooltip($) {
 
         function updateTooltip() {
             var productId = {{ product.id | default: 0 }};
@@ -158,21 +174,22 @@ Dien: Modified to support custom line item properties
         updateTooltip();
 
         // Listens to Ajax requests to cart.  Updates tooltip if necessary.
-        console.log('[[ON]]: ajaxComplete -- outside listenToCartAjax');
+        // Variable jQuery is used here instead of $ as some themes like Narrative augmented jQuery.
+        // If augmented jQuery's ajax() was used throughout the theme, adding handlers with $ will not trigger them.
+//        console.log('[[ON]]: ajaxComplete -- outside listenToCartAjax');
         jQuery(document).on('ajaxComplete.tooltip', function listenToCartAjax(event, request, setting) {
             console.log('--> ajaxComplete Handler called. URL: ' + setting.url + ' ID: ' + setting.requestId);
             if (/cart\/(?:update|add|change|clear)/i.test(setting.url)) {
-                console.log('[[OFF]]: ajaxComplete -- inside listenToCartAjax');
+//                console.log('[[OFF]]: ajaxComplete -- inside listenToCartAjax');
                 jQuery(document).off('ajaxComplete.tooltip');
 //                let id = Math.floor(Math.random() * 10001);
                 updateTooltip().always(function attachAjaxCompleteHandler() {
-                    console.log('[[OFF]]: ajaxComplete -- inside attachAjaxCompleteHandler');
+//                    console.log('[[OFF]]: ajaxComplete -- inside attachAjaxCompleteHandler');
                     jQuery(document).off('ajaxComplete.tooltip');
-                    console.log('[[ON]]: ajaxComplete -- inside attachAjaxCompleteHandler');
+//                    console.log('[[ON]]: ajaxComplete -- inside attachAjaxCompleteHandler');
                     jQuery(document).on('ajaxComplete.tooltip', listenToCartAjax);
                 });
             }
         });
     });
-    /* TODO:  Add tooltip to all .product__add-to-cart-button */
 </script>

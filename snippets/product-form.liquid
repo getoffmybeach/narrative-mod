@@ -1,6 +1,94 @@
 {% comment %}
-Dien: Modified to support custom line item properties
+Dien:
+Added support for custom line item properties.
+Added quantity-in-cart tooltip.
 {% endcomment %}
+<style>
+    .product__add-to-cart-container {
+        position: relative;
+    }
+    .product__tooltip-quantity-in-cart {
+        width: 2em;
+        height: 2em;
+        position: absolute;
+        top: -1em;
+        right: -1em;
+        z-index: 999;
+        border-radius: 50%;
+        background-color: #ffa500;
+        color: #fff;
+        font-size: 1.2rem;
+        font-weight: 700;
+        line-height: 2;
+        text-align: center;
+        cursor: default;
+        -webkit-transform: scale(0.1, 0.1);
+        -moz-transform: scale(0.1, 0.1);
+        -ms-transform: scale(0.1, 0.1);
+        -o-transform: scale(0.1, 0.1);
+        transform: scale(0.1, 0.1);
+        transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .product__tooltip-quantity-in-cart[data-has-more]:hover:before {
+        content: attr(data-more);
+        display: block;
+        position: absolute;
+        bottom: 115%;
+        left: 0%;
+        padding: 2px 6px;
+        border: 1px solid #ffa500;
+        border-radius: 4px;
+        line-height: normal;
+        font-size: 1rem;
+        font-weight: normal;
+        white-space: pre;
+        color: #4a4a4a;
+        background-color: #fff;
+    }
+    .product__tooltip-quantity-in-cart[data-has-more]:hover:after {
+        content: '';
+        display: block;
+        position: absolute;
+        bottom: 105%;
+        left: 50%;
+        width: 7px;
+        height: 7px;
+        background-color: #ffffff;
+        border-right: 1px solid #ffa500;
+        border-bottom: 1px solid #ffa500;
+        -webkit-transform: rotate(45deg);
+        -moz-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        -o-transform: rotate(45deg);
+        transform: rotate(45deg);
+    }
+    .product__tooltip-icon {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        fill: #ffffff;
+    }
+    .product__tooltip-number {
+        z-index: 1000;
+    }
+    .completely-hidden {
+        display: none;
+    }
+    .scale-to-size {
+        -webkit-transform: scale(1, 1);
+        -moz-transform: scale(1, 1);
+        -ms-transform: scale(1, 1);
+        -o-transform: scale(1, 1);
+        transform: scale(1, 1);
+        -webkit-transform-origin: center;
+        -moz-transform-origin: center;
+        -ms-transform-origin: center;
+        -o-transform-origin: center;
+        transform-origin: center;
+    }
+</style>
 <form class="product-form" action="/cart/add" method="post" enctype="multipart/form-data">
   {% unless product.variants.size == 1 and product.options.size == 1 and product.options.first == 'Title' and product.variants.first.title == 'Default Title' %}
     {% for option in product.options_with_values %}
@@ -85,18 +173,90 @@ Dien: Modified to support custom line item properties
   ------------------------------------------------------------------------------
   Cart
   ------------------------------------------------------------------------------
+  DIEN:
+    Added "tooltip" indicating quantity of viewed product already in cart.
+    Note: An extra div of class product_add-to-cart-container was added as parent of both the button and the tooltip.
+    This allows the tooltip to be absolutely positioned to the top-right corner of container, which has the same dimensions as the button's.
+    So the tooltip will always apprear on the same corner of the button.
+    Another option is to have the tooltip as a child of button but the effects on mouse events and outlining on focus make it less ideal.
+    Example: hovering on the tooltip would highlight the button, even though visually, part of the tooltip appears outside the button.
   {% endcomment %}
   <div class="product__add-to-cart">
-    <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite"{% unless current_variant.available %} disabled="true"{% endunless %} aria-live="polite">
-      <span class="primary-text" aria-hidden=false data-cart-primary-submit-text>
-        {% unless current_variant.available %}
-          {{ 'products.product.sold_out' | t }}
-        {% else %}
-          {{ 'products.product.add_to_cart' | t }}
-        {% endunless %}
-      </span>
-      <span class="secondary-text" aria-hidden=true data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
-    </button>
+    <div class="product__add-to-cart-container">
+        <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite"{% unless current_variant.available %} disabled="true"{% endunless %} aria-live="polite">
+          <span class="primary-text" aria-hidden=false data-cart-primary-submit-text>
+            {% unless current_variant.available %}
+              {{ 'products.product.sold_out' | t }}
+            {% else %}
+              {{ 'products.product.add_to_cart' | t }}
+            {% endunless %}
+          </span>
+          <span class="secondary-text" aria-hidden=true data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
+        </button>
+        {%- assign cart_type = sections.header.settings.icon | default: 'bag' -%}
+        {%- assign icon = 'icon-header-' | append: cart_type -%}
+        <aside class="product__tooltip-quantity-in-cart visually-hidden" data-has-more data-more="Quantity of this product in cart"><span class="product__tooltip-icon completely-hidden">{% include icon %}</span><span class="product__tooltip-number"></span></aside>
+    </div>
     <p class="product__notification text-small text-center" data-cart-notification></p>
   </div>
 </form>
+<script>
+    /* DIEN: "Quantity in cart" tooltip */
+    jQuery(function quantityTooltip($) {
+
+        function updateTooltip() {
+            var productId = {{ product.id | default: 0 }};
+            console.log('--> updateTooltip: perform AJAX ');
+            return ($.ajax({
+                method: 'GET',
+                url: '/cart.js',
+                dataType: 'json'
+            })
+            .done(function inspectCart(cart) {
+                if (cart.item_count > 0) {
+                    var foundItems = cart.items.filter(function findItems(item) {
+                        return (item.product_id === productId);
+                    });
+
+                    var total = 0;
+                    for (let i = foundItems.length; --i >= 0; ) {
+                        total += foundItems[i].quantity;
+                    }
+
+                    // Update the quantity tooltip
+                    if (total) {
+                        $('.product__tooltip-quantity-in-cart').removeClass('visually-hidden').addClass('scale-to-size');
+                        $('.product__tooltip-quantity-in-cart .product__tooltip-number').text(total);
+                    }
+                    else {
+                        $('.product__tooltip-quantity-in-cart').addClass('visually-hidden').removeClass('scale-to-size');
+                        $('.product__tooltip-quantity-in-cart .product__tooltip-number').text('');
+                    }
+                }
+            })
+            .fail(function ajaxErrorHandler(jqXHR, textStatus) {
+                console.log('Failed GET cart.js with status: ' + textStatus);
+            }));
+        }
+
+        updateTooltip();
+
+        // Listens to Ajax requests to cart.  Updates tooltip if necessary.
+        // Variable jQuery is used here instead of $ as some themes like Narrative augmented jQuery.
+        // If augmented jQuery's ajax() was used throughout the theme, adding handlers with $ will not trigger them.
+        jQuery(document).on('ajaxComplete.tooltip', function listenToCartAjax(event, request, setting) {
+            console.log('--> ajaxComplete Handler called. URL: ' + setting.url + ' ID: ' + setting.requestId);
+            if (/cart\/(?:update|add|change|clear)/i.test(setting.url)) {
+//                console.log('[[OFF]]: ajaxComplete -- inside listenToCartAjax');
+                jQuery(document).off('ajaxComplete.tooltip');
+//                let id = Math.floor(Math.random() * 10001);
+                updateTooltip().always(function attachAjaxCompleteHandler() {
+//                    console.log('[[OFF]]: ajaxComplete -- inside attachAjaxCompleteHandler');
+                    jQuery(document).off('ajaxComplete.tooltip');
+//                    console.log('[[ON]]: ajaxComplete -- inside attachAjaxCompleteHandler');
+                    jQuery(document).on('ajaxComplete.tooltip', listenToCartAjax);
+                });
+            }
+        });
+    });
+</script>

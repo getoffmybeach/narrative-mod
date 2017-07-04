@@ -2,19 +2,77 @@
 
 {% unless collection.products_count <= 0 %}
 <table>
+    <caption><h2>Bulk Order</h2></caption>
+    <tbody>
     {% for product in collection.products %}
-        <h2>{{ product.title }}</h2>
-        {% unless product.options_with_values == empty %}
-            {% for option in product.options_with_values%}
-                <label for="{{ product.id }}-{{ option.name }}">{{ option.name }}</label>
-                {% for value in option.values %}
-                    <select name="options[{{ option.name }}]" id="{{ product.id }}-{{ option.name }}">
-                        <option value="{{ value }}">{{ value }}</option>
-                    </select>
-                    {{ value }}
-                {% endfor %}
-            {% endfor %}
-        {% endunless %}
+        {% if product.available %}
+            <tr><th>{{ product.title }}</th></tr>
+            <tr>
+                <!-- Image -->
+                <td><img src="{{ product.featured_image | product_img_url: '160x160', format: 'pjpg' }}" alt="{{ product.title }}"></td>
+                <td colspan="2">{{ product.description }}</td>
+                <td colspan="2" style="width: 20%;"></td>
+            </tr>
+            <tr>
+                {% if product.has_only_default_variant %}
+                    <td>
+                        <!-- This product does not have customizable option, i.e. only has default variant -->
+                    </td>
+                {% else %}
+                    <!-- extract IDs of all available variants -->
+                    {% capture available_variant_IDs %}
+                        {% for variant in product.variants %}
+                            {% if variant.available %}
+                                {{ variant.id }};
+                            {% endif %}
+                        {% endfor %}
+                    {% endcapture %}
+
+                    <!-- Options -->
+                    {% assign first_variant = product.first_available_variant %}
+                    {% capture options_string %}
+                        {{ first_variant.option1 }};{{ first_variant.option2 }};{{ first_variant.option3 }}
+                    {% endcapture %}
+                    {% assign first_variant_options = options_string | strip| split: ';' %}
+
+                    {% unless product.options_with_values == empty %}
+                        {% for option in product.options_with_values %}
+                            {% assign option_index = forloop.index0 %}
+                            <td>
+                                <label for="{{ product.id }}-{{ option.name }}">{{ option.name }}
+                                    <select name="options[{{ option.name }}]" id="{{ product.id }}-{{ option.name }}">
+                                    {% for value in option.values %}
+                                        <option value="{{ value }}" {% if first_variant_options[option_index] == value %} selected {% endif %} >{{ value }}</option>
+                                    {% endfor %}
+                                    </select>
+                                </label>
+                            </td>
+                        {% endfor %}
+                    {% endunless %}
+                {% endif %} <!-- endif has_only_default_variant -->
+                <!-- Quantity -->
+                <td>
+                    <label for="Quantity-{{ product.id }}">{{ 'products.product.quantity' | t }}
+                        <input type="number" id="Quantity-{{ product.id }}" name="quantity" value="0" min="0" pattern="[0-9]*">
+                    </label>
+                </td>
+                <!-- Price -->
+                <td>
+                    {% if product.price_varies %}
+                        Starting from {{ product.price_min | money}}
+                    {% else %}
+                        Price: {{ product.price | money }}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    {{ product.title }}: {{ available_variant_IDs | default: '[No variant]' }}
+                </td>
+                {% assign available_variant_IDs = '' %}
+            </tr>
+        {% endif %} <!-- endif product.available -->
     {% endfor %}
+    </tbody>
 </table>
 {% endunless %}

@@ -1,49 +1,103 @@
 <style>
-    .bulk_order {
-        margin: 20px;
-        font-size: 1.4rem;
+    .bulk-order {
+        width: 80%;
+        margin: 20px auto;
+        font-size: 1.2rem;
     }
-    .bulk_order__image {
+    .bulk-order__header {
+        text-align: center;
+        font-size: 2em;
+    }
+    .bulk-order__row {
+        padding: 2px 28px ;
+        background-color: #f5f4f1;
+    }
+    .bulk-order__row:after {
+        content: " ";
+        display: table;
+        clear: both;
+    }
+    .bulk-order__title {
+        padding-top: 18px;
+        font-size: 1.6em;
+        font-family: Baskerville MT, "Baskerville Old Face", "Hoefler Text", Garamond, "Times New Roman", serif;
+    }
+    .bulk-order__image {
         width: 20%;
+        float: left;
     }
-    .bulk_order__description {
-        width: 50%;
+    .bulk-order__description {
+        width: 60%;
+        margin: 0 30px;
+        float: left;
     }
-    .bulk_order__option {
+    .bulk-order__price {
+        width: 20%;
+        float: left;
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+    .bulk-order__options-list {
+        width: 60%;
+        min-height: 110px;
+        float: left;
+    }
+    .bulk-order__option {
+        float: left;
+        margin: 0 30px;
+    }
+    .bulk-order__quantity {
+        width: 12%;
         float: right;
-        margin: 10px;
     }
-    .bulk_order tr {
-        background-color: #efeeeb;
+    .bulk-order__add-button {
+        float: right;
+        clear: right;
+        padding: 0;
+        width: 12%;
+        font-size: 0.9em;
     }
-    .bulk_order tr:nth-child(8n+1),
-    .bulk_order tr:nth-child(8n+2),
-    .bulk_order tr:nth-child(8n+3),
-    .bulk_order tr:nth-child(8n+4) {
-        background-color: #faf9f6;
+    .bulk-order__content .bulk-order__row:nth-child(6n+1),
+    .bulk-order__content .bulk-order__row:nth-child(6n+2),
+    .bulk-order__content .bulk-order__row:nth-child(6n+3) {
+        background-color: #edece9;
     }
 </style>
 
 {% assign collection = collections.pf-bikes %}
 
 {% unless collection.products_count <= 0 %}
-<table class="bulk_order">
-    <caption><h3>Bulk Order</h3></caption>
-    <tbody>
+<div class="bulk-order">
+    <header class="bulk-order__header">Bulk Order</header>
+    <div class="bulk-order__content">
     {% for product in collection.products %}
         {% if product.available %}
-            <tr><th colspan="4">{{ product.title }}</th></tr>
-            <tr>
+            <div class="bulk-order__row"><p class="bulk-order__title">{{ product.title }}</p></div>
+            <div class="bulk-order__row">
                 <!-- Image -->
-                <td class="bulk_order__image" colspan="1"><img src="{{ product.featured_image | product_img_url: '240x240', format: 'pjpg' }}" alt="{{ product.title }}"></td>
+                <div class="bulk-order__image"><img src="{{ product.featured_image | product_img_url: '240x240', format: 'pjpg' }}" alt="{{ product.title }}"></div>
                 <!-- Description -->
-                <td class="bulk_order__description" colspan="3">{{ product.description }}</td>
-            </tr>
-            <tr>
-                <td class="bulk_order__cell--empty" colspan="1"></td>
+                <div class="bulk-order__description">{{ product.description }}</div>
+                <!-- Quantity -->
+                <div class="bulk-order__quantity">
+                    <label for="Quantity-{{ product.id }}">{{ 'products.product.quantity' | t }}
+                        <input type="number" id="Quantity-{{ product.id }}" name="quantity" value="0" min="0" pattern="[0-9]*">
+                    </label>
+                </div>
+                <button class="btn bulk-order__add-button"><span class="primary-text" aria-hidden="false">Add to cart</span></button>
+            </div>
+            <div class="bulk-order__row">
+                <!-- Price -->
+                <div class="bulk-order__price">
+                    {% if product.price_varies %}
+                        Starting from {{ product.price_min | money}}
+                    {% else %}
+                        Price: {{ product.price | money }}
+                    {% endif %}
+                </div>
 
                 <!-- Options -->
-                <td class="bulk_order__options-list" colspan="1">
+                <div class="bulk-order__options-list">
                 {% if product.has_only_default_variant %}
                         <!-- This product does not have customizable option, i.e. only has default variant -->
                 {% else %}
@@ -62,7 +116,7 @@
                             {{ first_variant.option1 }};{{ first_variant.option2 }};{{ first_variant.option3 }}
                         {% endcapture %}
                         {% assign first_variant_options = options_string | strip | split: ';' %}
-                        <div class="bulk_order__option">
+                        <div class="bulk-order__option">
                         {% for option in product.options_with_values %}
                             {% assign option_index = forloop.index0 %}
                                 <label for="{{ product.id }}-{{ option.name }}">{{ option.name }}
@@ -76,30 +130,19 @@
                         </div>
                     {% endunless %}
                 {% endif %} <!-- endif has_only_default_variant -->
-                </td>
-                <!-- Quantity -->
-                <td class="bulk_order__quantity" colspan="1">
-                    <label for="Quantity-{{ product.id }}">{{ 'products.product.quantity' | t }}
-                        <input type="number" id="Quantity-{{ product.id }}" name="quantity" value="0" min="0" pattern="[0-9]*">
-                    </label>
-                </td>
-                <!-- Price -->
-                <td class="bulk_order__price" colspan="1">
-                    {% if product.price_varies %}
-                        Starting from {{ product.price_min | money}}
-                    {% else %}
-                        Price: {{ product.price | money }}
-                    {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <td colspan="4">
+                </div>
+            </div>
+            {% comment %}
+            DIEN TO DELETE
+            <div class="bulk-order__row">
+                <div>
                     {{ product.title }}: {{ available_variant_IDs | default: '[No variant]' }}
-                </td>
+                </div>
                 {% assign available_variant_IDs = '' %}
-            </tr>
+            </div>
+            {% endcomment %}
         {% endif %} <!-- endif product.available -->
     {% endfor %}
-    </tbody>
-</table>
+    </div>
+</div>
 {% endunless %}

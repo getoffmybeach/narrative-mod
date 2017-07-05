@@ -72,6 +72,7 @@
     <div class="bulk-order__content">
     {% for product in collection.products %}
         {% if product.available %}
+            <!-- Product name -->
             <div class="bulk-order__row"><p class="bulk-order__title">{{ product.title }}</p></div>
             <div class="bulk-order__row">
                 <!-- Image -->
@@ -84,6 +85,7 @@
                         <input type="number" id="Quantity-{{ product.id }}" name="quantity" value="0" min="0" pattern="[0-9]*">
                     </label>
                 </div>
+                <!-- Add-to-Cart Button -->
                 <button class="btn bulk-order__add-button"><span class="primary-text" aria-hidden="false">Add to cart</span></button>
             </div>
             <div class="bulk-order__row">
@@ -129,7 +131,7 @@
                         {% endfor %}
                         </div>
                     {% endunless %}
-                {% endif %} <!-- endif has_only_default_variant -->
+                {% endif %}
                 </div>
             </div>
             {% comment %}
@@ -141,7 +143,7 @@
                 {% assign available_variant_IDs = '' %}
             </div>
             {% endcomment %}
-        {% endif %} <!-- endif product.available -->
+        {% endif %}
     {% endfor %}
     </div>
 </div>

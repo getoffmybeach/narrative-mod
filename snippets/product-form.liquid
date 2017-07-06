@@ -156,10 +156,10 @@ Added quantity-in-cart tooltip.
           {% endif %}
           <input {% if block.settings.custom_property_required %} required {% endif %} class="product-form__custom-property-input" type="{{ block.settings.custom_property_type }}" id="{{ block.type }}-{{ block.id }}-{{ section.id }}" name="properties[{{ block.settings.custom_property_name | strip_html }}]"
             {% if block.settings.custom_property_type == 'number' %}
+              pattern="\d*"
               {% case block.settings.custom_property_number_range %}
-                {% when 'positive' %}min="0"
-                {% when 'positive_no_zero' %}min="1"
-                {% when 'all_integers' %}
+                {% when 'positive' %} min="0"
+                {% when 'positive_no_zero' %} min="1"
                 {% else %}
               {% endcase %}
             {% endif %} >

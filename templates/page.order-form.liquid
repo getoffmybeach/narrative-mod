@@ -75,7 +75,7 @@
         width: 100%;
         /*padding-right: 28px;*/
         margin-bottom: 28px;
-        font-size: 0.9em;
+        /*font-size: 0.9em;*/
     }
     .bulk-order__main .bulk-order__row:nth-child(4n+1),
     .bulk-order__main .bulk-order__row:nth-child(4n+2) {
@@ -116,12 +116,15 @@
             flex-direction: row;
         }
     }
+    .completely-hidden {
+        display: none;
+    }
 </style>
 
 {% assign collection = collections.pf-bikes %}
 
 {% unless collection.products_count <= 0 %}
-<div class="bulk-order page-width">
+<main class="bulk-order page-width">
     <header class="bulk-order__header">Bulk Order</header>
     <div class="bulk-order__main">
     {% for product in collection.products %}
@@ -148,18 +151,10 @@
                     <!-- Options -->
                     <div class="bulk-order__options-list">
                     {% if product.has_only_default_variant %}
-                            <!-- This product does not have customizable option, i.e. only has default variant -->
+                        <!-- This product does not have customizable option, i.e. only has default variant -->
                     {% else %}
-                        <!-- extract IDs of all available variants -->
-                        {% capture available_variant_IDs %}
-                            {% for variant in product.variants %}
-                                {% if variant.available %}
-                                    {{ variant.id }};
-                                {% endif %}
-                            {% endfor %}
-                        {% endcapture %}
-
                         {% unless product.options_with_values == empty %}
+{% comment %}
                             {% assign first_variant = product.first_available_variant %}
                             {% capture options_string %}
                                 {{ first_variant.option1 }};{{ first_variant.option2 }};{{ first_variant.option3 }}
@@ -168,14 +163,51 @@
                             {% for option in product.options_with_values %}
                             <div class="bulk-order__option">
                                 {% assign option_index = forloop.index0 %}
-                                    <label for="{{ product.id }}-{{ option.name }}">{{ option.name }}</label>
-                                    <select name="options[{{ option.name }}]" id="{{ product.id }}-{{ option.name }}">
-                                    {% for value in option.values %}
-                                        <option value="{{ value }}" {% if first_variant_options[option_index] == value %} selected {% endif %}>{{ value }}</option>
-                                    {% endfor %}
-                                    </select>
+                                <label for="{{ product.id }}-{{ option.name }}">{{ option.name }}</label>
+                                <select name="options[{{ option.name }}]" id="{{ product.id }}-{{ option.name }}">
+                                {% for value in option.values %}
+                                    <option value="{{ value }}" {% if first_variant_options[option_index] == value %} selected {% endif %}>{{ value }}</option>
+                                {% endfor %}
+                                </select>
                             </div>
                             {% endfor %}
+{% endcomment %}
+
+                            <!-- extract IDs of all available variants -->
+                            {% capture available_variant_IDs %}
+                            {% for variant in product.variants %}
+                                {% if variant.available %}
+                                    {{ variant.id }};
+                                {% endif %}
+                            {% endfor %}
+                            {% endcapture %}
+
+                            {% unless product.first_available_variant.empty? %}
+                            <fieldset>
+                                <legend>Variants</legend>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                        {% for option in product.options_with_values %}
+                                            <th>{{ option.name }}</th>
+                                        {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for variant in product.variants %}
+                                            {% if variant.available %}
+                                                <tr>
+                                                    <td>{{ variant.option1 | default: ''}}</td>
+                                                    <td>{{ variant.option2 | default: ''}}</td>
+                                                    <td>{{ variant.option3 | default: ''}}</td>
+                                                    <td><input type="number" id="Quantity-{{ variant.id }}" name="{{ variant.id }}" value="0" min="0" step="1" pattern="[0-9]*"></td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </fieldset>
+                            {% endunless %}
                         {% endunless %}
                     {% endif %}
                     </div>
@@ -184,7 +216,7 @@
                     <!-- Quantity -->
                     <div class="bulk-order__quantity">
                         <label for="Quantity-{{ product.id }}">{{ 'products.product.quantity' | t }}
-                            <input type="number" id="Quantity-{{ product.id }}" name="quantity" value="0" min="0" pattern="[0-9]*">
+                            <input type="number" id="Quantity-{{ product.id }}" name="quantity" value="0" min="0" step="1" pattern="[0-9]*">
                         </label>
                     </div>
                     <!-- Add-to-Cart Button -->
@@ -195,15 +227,13 @@
             </div>
             {% comment %}
             DIEN TO DELETE
-            <div class="bulk-order__row">
-                <div>
-                    {{ product.title }}: {{ available_variant_IDs | default: '[No variant]' }}
-                </div>
+            <div class="variants-list completely-hidden">
+                {{ product.title }}: {{ available_variant_IDs | default: '[No variant]' }}
                 {% assign available_variant_IDs = '' %}
             </div>
             {% endcomment %}
         {% endif %}
     {% endfor %}
     </div>
-</div>
+</main>
 {% endunless %}

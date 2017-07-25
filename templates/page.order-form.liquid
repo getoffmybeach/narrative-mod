@@ -5,6 +5,7 @@
         font-size: 1.2rem;
     }
     .bulk-order__header {
+        margin: 30px 0;
         text-align: center;
         font-size: 2em;
     }
@@ -22,6 +23,9 @@
         padding: 20px 28px 2px 28px;
         font-size: 1.6em;
         font-family: Baskerville MT, "Baskerville Old Face", "Hoefler Text", Garamond, "Times New Roman", serif;
+    }
+    .bulk-order__pagination {
+        text-align: right;
     }
     .bulk-order__content {
         display: flex;
@@ -78,6 +82,16 @@
         margin-bottom: 28px;
         /*font-size: 0.9em;*/
     }
+    .bulk-order__order-button {
+        position: fixed;
+        position: -webkit-sticky;
+        position: sticky;
+        right: 0;
+        left: 0;
+        bottom: 15px;
+        max-width: 400px;
+        margin: 8px auto 15px auto;
+    }
     .bulk-order__main .bulk-order__row:nth-child(4n+1),
     .bulk-order__main .bulk-order__row:nth-child(4n+2) {
         background-color: #edece9;
@@ -99,14 +113,6 @@
         }
         .bulk-order__variant {
             font-size: 0.9rem;
-        }
-        .bulk-order__order-button {
-            position: fixed;
-            position: -webkit-sticky;
-            position: sticky;
-            right: 0;
-            left: 0;
-            bottom: 0;
         }
     }
     @media only screen and (min-width: 750px) {
@@ -139,98 +145,106 @@
 {% unless collection.products_count <= 0 %}
 <div class="bulk-order page-width">
     <header class="bulk-order__header">{{ page.title }}</header>
+    {% paginate collection.products by 10 %}
+    <nav class="bulk-order__pagination">
+        {{ paginate | default_pagination }}
+    </nav>
     <div class="bulk-order__main">
-    {% for product in collection.products %}
-        {% if product.available %}
-            <!-- Product name -->
-            <div class="bulk-order__row"><p class="bulk-order__title">{{ product.title }}</p></div>
-            <div class="bulk-order__row bulk-order__content">
-                <div class="bulk-order__box box--start">
-                    <!-- Image -->
-                    <div class="bulk-order__image">
-                        <a href="{{ product.url }}">
-                            <img src="{{ product.featured_image | product_img_url: '320x320', format: 'pjpg' }}" alt="{{ product.title }}">
-                        </a>
-                    </div>
-                    <!-- Price -->
-                    <div class="bulk-order__price">
-                        {% if product.price_varies %}
-                            Starting from {{ product.price_min | money}}
-                        {% else %}
-                            Price: {{ product.price | money }}
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="bulk-order__box box--middle">
-                    <!-- Description -->
-                    <div class="bulk-order__description">{{ product.description }}</div>
-
-                    <form action="/cart/update.js" method="post" id="bulk-order__form">
-                        <!-- Variants -->
-                        <div class="bulk-order__variants-list">
-                        {% if product.has_only_default_variant %}
-                            <!-- This product does not have customizable option, i.e. only has default variant -->
-                            {% assign variant = product.first_available_variant %}
-                            <input type="number" id="Quantity-{{ variant.id }}" name="updates[{{ variant.id }}]" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*">
-                        {% else %}
-                                                                        {% comment %}
-                            <!-- extract IDs of all available variants -->
-                            {% capture available_variant_IDs %}
-                            {% for variant in product.variants %}
-                                {% if variant.available %}
-                                    {{ variant.id }};
-                                {% endif %}
-                            {% endfor %}
-                            {% endcapture %}
-                                                                        {% endcomment %}
-                            <fieldset>
-                                <legend>Variants</legend>
-                                <table>
-                                    {% unless product.options_with_values == empty %}
-                                    <thead>
-                                        <tr>
-                                            {% for option in product.options_with_values %}
-                                            <th>{{ option.name }}</th>
-                                            {% endfor %}
-                                        </tr>
-                                    </thead>
-                                    {% endunless %}
-                                    <tbody>
-                                        {% for variant in product.variants %}
-                                            {% if variant.available %}
-                                                <tr class="bulk-order__variant">
-                                                    <td>{{ variant.option1 | downcase | capitalize | default: '' }}</td>
-                                                    <td>{{ variant.option2 | downcase | capitalize | default: '' }}</td>
-                                                    <td>{{ variant.option3 | downcase | capitalize | default: '' }}</td>
-                                                    <td>{{ variant.price | money | default: '' }}</td>
-                                                    <td><input type="number" id="Quantity-{{ variant.id }}" name="updates[{{ variant.id }}]" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*"></td>
-                                                </tr>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </fieldset>
-                        {% endif %}
+        {% for product in collection.products %}
+            {% if product.available %}
+                <!-- Product name -->
+                <div class="bulk-order__row"><p class="bulk-order__title">{{ product.title }}</p></div>
+                <div class="bulk-order__row bulk-order__content">
+                    <div class="bulk-order__box box--start">
+                        <!-- Image -->
+                        <div class="bulk-order__image">
+                            <a href="{{ product.url }}">
+                                <img src="{{ product.featured_image | product_img_url: '320x320', format: 'pjpg' }}" alt="{{ product.title }}">
+                            </a>
                         </div>
-                    </form>
-                </div>
-                <div class="bulk-order__box box--end">
-                    <!-- Clear Button -->
-                    <div class="bulk-order__clear-button">
-                        <button class="btn btn--full"><span class="primary-text" aria-hidden="false">Clear</span></button>
+                        <!-- Price -->
+                        <div class="bulk-order__price">
+                            {% if product.price_varies %}
+                                Starting from {{ product.price_min | money}}
+                            {% else %}
+                                Price: {{ product.price | money }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="bulk-order__box box--middle">
+                        <!-- Description -->
+                        <div class="bulk-order__description">{{ product.description }}</div>
+
+                        <form action="/cart/update.js" method="post" id="bulk-order__form">
+                            <!-- Variants -->
+                            <div class="bulk-order__variants-list">
+                            {% if product.has_only_default_variant %}
+                                <!-- This product does not have customizable option, i.e. only has default variant -->
+                                {% assign variant = product.first_available_variant %}
+                                <input type="number" id="Quantity-{{ variant.id }}" name="updates[{{ variant.id }}]" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*">
+                            {% else %}
+                                                                            {% comment %}
+                                <!-- extract IDs of all available variants -->
+                                {% capture available_variant_IDs %}
+                                {% for variant in product.variants %}
+                                    {% if variant.available %}
+                                        {{ variant.id }};
+                                    {% endif %}
+                                {% endfor %}
+                                {% endcapture %}
+                                                                            {% endcomment %}
+                                <fieldset>
+                                    <legend>Variants</legend>
+                                    <table>
+                                        {% unless product.options_with_values == empty %}
+                                        <thead>
+                                            <tr>
+                                                {% for option in product.options_with_values %}
+                                                <th>{{ option.name }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        {% endunless %}
+                                        <tbody>
+                                            {% for variant in product.variants %}
+                                                {% if variant.available %}
+                                                    <tr class="bulk-order__variant">
+                                                        <td>{{ variant.option1 | downcase | capitalize | default: '' }}</td>
+                                                        <td>{{ variant.option2 | downcase | capitalize | default: '' }}</td>
+                                                        <td>{{ variant.option3 | downcase | capitalize | default: '' }}</td>
+                                                        <td>{{ variant.price | money | default: '' }}</td>
+                                                        <td><input type="number" id="Quantity-{{ variant.id }}" name="updates[{{ variant.id }}]" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*"></td>
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </fieldset>
+                            {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                    <div class="bulk-order__box box--end">
+                        <!-- Clear Button -->
+                        <div class="bulk-order__clear-button">
+                            <button class="btn btn--full"><span class="primary-text" aria-hidden="false">Clear</span></button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% comment %}
-            DIEN TO DELETE
-            <div class="variants-list completely-hidden">
-                {{ product.title }}: {{ available_variant_IDs | default: '[No variant]' }}
-                {% assign available_variant_IDs = '' %}
-            </div>
-            {% endcomment %}
-        {% endif %}
-    {% endfor %}
+                {% comment %}
+                DIEN TO DELETE
+                <div class="variants-list completely-hidden">
+                    {{ product.title }}: {{ available_variant_IDs | default: '[No variant]' }}
+                    {% assign available_variant_IDs = '' %}
+                </div>
+                {% endcomment %}
+            {% endif %}
+        {% endfor %}
     </div>
+    <nav class="bulk-order__pagination">
+        {{ paginate | default_pagination }}
+    </nav>
+    {% endpaginate %}
     <!-- Order Button -->
     <div class="bulk-order__order-button">
         <button class="btn btn--full" form="bulk-order__form"><span class="primary-text" aria-hidden="false">Order</span></button>

@@ -37,14 +37,6 @@
     .bulk-order__image {
         width: 100%;
     }
-    .bulk-order__description {
-        width: 100%;
-        /*max-height: 168px ;*/
-        /*padding: 0 28px;*/
-        margin-bottom: 18px;
-        /*float: left;*/
-        overflow: auto;
-    }
     .bulk-order__price {
         width: 100%;
         /*padding-left: 28px;*/
@@ -71,7 +63,7 @@
         margin-bottom: 28px;
         /*font-size: 0.9em;*/
     }
-    .bulk-order__order-button {
+    .bulk-order__add-button {
         position: fixed;
         position: -webkit-sticky;
         position: sticky;
@@ -96,6 +88,9 @@
         .box--middle {
             max-width: 320px;       /* Same max-width as product image */
         }
+        .bulk-order__description {
+            display: none;
+        }
         .bulk-order__variants-list {
             font-size: 1rem;
         }
@@ -113,7 +108,7 @@
             text-overflow: ellipsis;
             overflow: hidden;
         }
-        td.bulk-order__input--quantity {
+        td.bulk-order__quantity {
             max-width: 100%;
         }
         .bulk-order__variants-list input[type="number"] {
@@ -142,6 +137,14 @@
         }
         .box--end {
             flex-basis: 20%;
+        }
+        .bulk-order__description {
+            width: 100%;
+            /*max-height: 168px ;*/
+            /*padding: 0 28px;*/
+            margin-bottom: 18px;
+            /*float: left;*/
+            overflow: auto;
         }
     }
     .completely-hidden {
@@ -182,17 +185,17 @@
                         </div>
                     </div>
                     <div class="bulk-order__box box--middle">
-                        {% comment %}
                         <!-- Description -->
                         <div class="bulk-order__description">{{ product.description }}</div>
-                        {% endcomment %}
 
                         <!-- Variants -->
                         <div class="bulk-order__variants-list">
                         {% if product.has_only_default_variant %}
                             <!-- This product does not have customizable option, i.e. only has default variant -->
                             {% assign variant = product.first_available_variant %}
-                            <input type="number" id="Quantity-{{ variant.id }}" name="updates[{{ variant.id }}]" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*">
+                            <div class="bulk-order__quantity">
+                                <input type="number" id="Quantity-{{ variant.id }}" name="updates[{{ variant.id }}]" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*">
+                            </div>
                         {% else %}
                             <fieldset>
                                 <legend>Variants</legend>
@@ -220,7 +223,9 @@
                                                         <td>{{ variant.option3 | downcase | capitalize | default: '' }}</td>
                                                     {% endunless %}
                                                     <td>{{ variant.price | money | default: '' }}</td>
-                                                    <td class="bulk-order__input--quantity"><input type="number" id="Quantity-{{ variant.id }}" name="updates[{{ variant.id }}]" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*"></td>
+                                                    <td class="bulk-order__quantity">
+                                                        <input type="number" id="Quantity-{{ variant.id }}" name="updates[{{ variant.id }}]" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*">
+                                                    </td>
                                                 </tr>
                                             {% endif %}
                                         {% endfor %}
@@ -247,9 +252,43 @@
         {{ paginate | default_pagination }}
     </nav>
     {% endpaginate %}
-    <!-- Order Button -->
-    <div class="bulk-order__order-button">
-        <button class="btn btn--full" form="bulk-order__form"><span class="primary-text" aria-hidden="false">Order</span></button>
+    <!-- Add Button -->
+    <div class="bulk-order__add-button">
+        <button class="btn btn--full" form="bulk-order__form"><span class="primary-text" aria-hidden="false">Add to Cart</span></button>
     </div>
 </div>
 {% endunless %}
+
+<script>
+    jQuery(function orderForm ($) {
+        var $Quantity = $('.bulk-order__quantity input[type="number"]');
+
+        function quantityIsNonZero() {
+            return $Quantity.is(function nonZeroTest(idx, elem) {
+                return (+elem.value);  // value is a string, convert to number with +
+            });
+        }
+
+        function confirmLeave(e) {
+            var confirm = 'Are you sure?';
+
+            // If quantity fields have been changed, ask for confirmation before leaving page
+            if (quantityIsNonZero()) {
+                (e || window.event).returnValue = confirm;
+                return confirm;
+            }
+        }
+
+        $(window).on('beforeunload', confirmLeave);
+
+        $('.bulk-order__add-button button').on('click', function checkQuantityToAdd() {
+            if (!quantityIsNonZero()) {
+                // If values in quantity fields are all zero, do nothing.
+                return false;
+            }
+            else {
+                $(window).off('beforeunload', confirmLeave);
+            }
+        })
+    });
+</script>

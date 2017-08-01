@@ -252,19 +252,35 @@
         {{ paginate | default_pagination }}
     </nav>
     {% endpaginate %}
-    <!-- Add Button -->
     <div class="bulk-order__add-button">
-        <button class="btn btn--full" form="bulk-order__form"><span class="primary-text" aria-hidden="false">Add to Cart</span></button>
+    <form class="product-form" action="/cart/add" method="post" enctype="multipart/form-data">
+        <select name="id" class="product-form__master-select supports-no-js" data-master-select>
+            <option selected="selected" data-sku="0" value="39647824516"></option>
+        </select>
+        <div class="product-form__item product-form__quantity-selector completely-hidden">
+            <label class="product-form__quantity-label product-form__quantity-label--hidden" for="Quantity-39647824516"></label>
+            <input class="product-form__quantity-input" type="number" id="Quantity-39647824516" name="quantity" value="0" min="0" pattern="[0-9]*">
+        </div>
+        <!-- Add Button -->
+        <div class="product__add-to-cart">
+            <div class="product__add-to-cart-container">
+                <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite" aria-live="polite">
+                    <span class="primary-text" aria-hidden=false data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
+                    <span class="secondary-text" aria-hidden=true data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
+                </button>
+            </div>
+        </div>
+    </form>
     </div>
 </div>
 {% endunless %}
 
 <script>
     jQuery(function orderForm ($) {
-        var $Quantity = $('.bulk-order__quantity input[type="number"]');
+        var $quantity = $('.bulk-order__quantity input[type="number"]');
 
-        function quantityIsNonZero() {
-            return $Quantity.is(function nonZeroTest(idx, elem) {
+        function nonZeroQuantity() {
+            return $quantity.filter(function nonZeroTest(idx, elem) {
                 return (+elem.value);  // value is a string, convert to number with +
             });
         }
@@ -273,7 +289,7 @@
             var confirm = 'Are you sure?';
 
             // If quantity fields have been changed, ask for confirmation before leaving page
-            if (quantityIsNonZero()) {
+            if (nonZeroQuantity().length) {
                 (e || window.event).returnValue = confirm;
                 return confirm;
             }
@@ -281,13 +297,24 @@
 
         $(window).on('beforeunload', confirmLeave);
 
-        $('.bulk-order__add-button button').on('click', function checkQuantityToAdd() {
-            if (!quantityIsNonZero()) {
+        $('.bulk-order__add-button button').on('click', function checkQuantityToUpdate() {
+            var $quantitiesToUpdates = nonZeroQuantity();
+            if (!$quantitiesToUpdates.length) {
                 // If values in quantity fields are all zero, do nothing.
                 return false;
             }
             else {
-                $(window).off('beforeunload', confirmLeave);
+                var serializedQuantities = $quantitiesToUpdates.serialize();
+                jQuery.ajax({
+                    method: 'POST',
+                    url: '/cart/update.js',
+                    data: serializedQuantities,
+                    dataType: 'json'
+                })
+                .done(function updateSuccess() {
+                    // Resets quantity values
+                    $quantitiesToUpdates.val('0');
+                });
             }
         })
     });

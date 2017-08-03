@@ -252,25 +252,12 @@
         {{ paginate | default_pagination }}
     </nav>
     {% endpaginate %}
+    <!-- Add Button -->
     <div class="bulk-order__add-button">
-    <form class="product-form" action="/cart/add" method="post" enctype="multipart/form-data">
-        <select name="id" class="product-form__master-select supports-no-js" data-master-select>
-            <option selected="selected" data-sku="0" value="39647824516"></option>
-        </select>
-        <div class="product-form__item product-form__quantity-selector completely-hidden">
-            <label class="product-form__quantity-label product-form__quantity-label--hidden" for="Quantity-39647824516"></label>
-            <input class="product-form__quantity-input" type="number" id="Quantity-39647824516" name="quantity" value="0" min="0" pattern="[0-9]*">
-        </div>
-        <!-- Add Button -->
-        <div class="product__add-to-cart">
-            <div class="product__add-to-cart-container">
-                <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite" aria-live="polite">
-                    <span class="primary-text" aria-hidden=false data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
-                    <span class="secondary-text" aria-hidden=true data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
-                </button>
-            </div>
-        </div>
-    </form>
+        <button class="btn btn--to-secondary btn--full product__add-to-cart-button">
+            <span class="primary-text" aria-hidden=false data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
+            <span class="secondary-text" aria-hidden=true data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
+        </button>
     </div>
 </div>
 {% endunless %}
@@ -297,14 +284,13 @@
 
         $(window).on('beforeunload', confirmLeave);
 
-        $('.bulk-order__add-button button').on('click', function checkQuantityToUpdate() {
+        $('.bulk-order__add-button button').on('click', function checkQuantityToUpdate(evt) {
             var $quantitiesToUpdates = nonZeroQuantity();
-            if (!$quantitiesToUpdates.length) {
-                // If values in quantity fields are all zero, do nothing.
-                return false;
-            }
-            else {
+            var $target = $(evt.target);
+            // Perform Ajax call only if there are non-zero quantities.
+            if ($quantitiesToUpdates.length) {
                 var serializedQuantities = $quantitiesToUpdates.serialize();
+                evt.preventDefault();
                 jQuery.ajax({
                     method: 'POST',
                     url: '/cart/update.js',
@@ -312,10 +298,28 @@
                     dataType: 'json'
                 })
                 .done(function updateSuccess() {
-                    // Resets quantity values
+                    // If cart drawer present
+                    // Add conditional code here...
+                    // TODO: Refresh car drawer page...
+
+                    // Resets quantity inputs
                     $quantitiesToUpdates.val('0');
+                    // Change button to secondary appearance
+                    $target.addClass('btn--to-secondary-transitioned ajax-cart__toggle');
+
+                    // Add handler to reset button appearance when quantity input changes
+                    $('.bulk-order__variants-list').on('change', 'input', function resetBulkAddButton() {
+                        console.log('-------- resetBulkAddbutton ---------');
+                        $target.removeClass('btn--to-secondary-transitioned ajax-cart__toggle');
+                        $('.bulk-order__variants-list').off('change', 'input', resetBulkAddButton)
+                    });
                 });
             }
-        })
+            else {
+//                if (!$target.hasClass('btn--to-secondary-transitioned')) {
+//                    return false;
+//                }
+            }
+        });
     });
 </script>

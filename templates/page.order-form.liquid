@@ -253,7 +253,7 @@
     </nav>
     {% endpaginate %}
     <!-- Add Button -->
-    <div class="bulk-order__add-button">
+    <div class="bulk-order__add-button completely-hidden">
         <button class="btn btn--to-secondary btn--full product__add-to-cart-button">
             <span class="primary-text" aria-hidden="false" data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
             <span class="secondary-text" aria-hidden="true" data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
@@ -262,17 +262,19 @@
 
     <!----------- Cart Drawer Refresh -------------->
     {%- assign product = collection.products[0] %}
-    <div class="cart-drawer-refresh completely-hidden" data-section-id="{{ section.id }}" data-section-type="product-template" data-variant-id="39647824516" itemscope itemtype="http://schema.org/Product">
+    <div class="cart-drawer-refresh bulk-order__add-button" data-section-id="{{ section.id }}" data-section-type="product-template" data-variant-id="39647824516" itemscope itemtype="http://schema.org/Product">
         <form class="product-form" action="/cart/add" method="post" enctype="multipart/form-data">
-            <select name="id" class="product-form__master-select supports-no-js" data-master-select>
+            <select name="id" class="product-form__master-select supports-no-js completely-hidden" data-master-select>
                 <option selected="selected" data-sku="0" value="39647824516"></option>
             </select>
-            <div class="product-form__item product-form__quantity-selector">
+            <div class="product-form__item product-form__quantity-selector completely-hidden">
                 <input class="product-form__quantity-input" type="number" id="Quantity-39647824516" name="quantity" value="0" min="0" pattern="[0-9]*">
             </div>
             <!-- Add Button -->
-            <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite" aria-live="polite">
-            </button>
+                <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite" aria-live="polite">
+                    <span class="primary-text" aria-hidden="false" data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
+                    <span class="secondary-text" aria-hidden="true" data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
+                </button>
         </form>
         {% comment %}
         ------------------------------------------------------------------------------
@@ -313,7 +315,7 @@
             // Perform Ajax call only if there are non-zero quantities.
             if ($quantitiesToUpdates.length) {
                 var serializedQuantities = $quantitiesToUpdates.serialize();
-                evt.preventDefault();
+//                evt.preventDefault();
                 jQuery.ajax({
                     method: 'POST',
                     url: '/cart/update.js',
@@ -323,12 +325,12 @@
                 .done(function updateSuccess() {
                     // If cart drawer present
                     // Add conditional code here...
-                    $('.cart-drawer-refresh button.product__add-to-cart-button').trigger('click');
+//                    $('.cart-drawer-refresh button.product__add-to-cart-button').trigger('click');
 
                     // Resets quantity inputs
                     $quantitiesToUpdates.val('0');
                     // Change button to secondary appearance
-                    $target.addClass('btn--to-secondary-transitioned ajax-cart__toggle');
+//                    $target.addClass('btn--to-secondary-transitioned ajax-cart__toggle');
 
                     // Add handler to reset button appearance when quantity input changes
                     $('.bulk-order__variants-list').on('change', 'input', function resetBulkAddButton() {
@@ -342,6 +344,7 @@
 //                if (!$target.hasClass('btn--to-secondary-transitioned')) {
 //                    return false;
 //                }
+//                evt.preventDefault();
             }
         });
     });

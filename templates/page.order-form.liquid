@@ -255,11 +255,34 @@
     <!-- Add Button -->
     <div class="bulk-order__add-button">
         <button class="btn btn--to-secondary btn--full product__add-to-cart-button">
-            <span class="primary-text" aria-hidden=false data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
-            <span class="secondary-text" aria-hidden=true data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
+            <span class="primary-text" aria-hidden="false" data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
+            <span class="secondary-text" aria-hidden="true" data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
         </button>
     </div>
-</div>
+
+    <!----------- Cart Drawer Refresh -------------->
+    {%- assign product = collection.products[0] %}
+    <div class="cart-drawer-refresh completely-hidden" data-section-id="{{ section.id }}" data-section-type="product-template" data-variant-id="39647824516" itemscope itemtype="http://schema.org/Product">
+        <form class="product-form" action="/cart/add" method="post" enctype="multipart/form-data">
+            <select name="id" class="product-form__master-select supports-no-js" data-master-select>
+                <option selected="selected" data-sku="0" value="39647824516"></option>
+            </select>
+            <div class="product-form__item product-form__quantity-selector">
+                <input class="product-form__quantity-input" type="number" id="Quantity-39647824516" name="quantity" value="0" min="0" pattern="[0-9]*">
+            </div>
+            <!-- Add Button -->
+            <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite" aria-live="polite">
+            </button>
+        </form>
+        {% comment %}
+        ------------------------------------------------------------------------------
+        Product Data
+        ------------------------------------------------------------------------------
+        {% endcomment %}
+        <script type="application/json" data-product-json>
+            {{ product | json }}
+        </script>
+    </div>
 {% endunless %}
 
 <script>
@@ -300,7 +323,7 @@
                 .done(function updateSuccess() {
                     // If cart drawer present
                     // Add conditional code here...
-                    // TODO: Refresh car drawer page...
+                    $('.cart-drawer-refresh button.product__add-to-cart-button').trigger('click');
 
                     // Resets quantity inputs
                     $quantitiesToUpdates.val('0');

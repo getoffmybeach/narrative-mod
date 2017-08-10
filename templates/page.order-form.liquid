@@ -162,7 +162,7 @@
         {{ paginate | default_pagination }}
     </nav>
     <div class="bulk-order__main">
-        <form action="/cart/update.js" method="post" id="bulk-order__form">
+        <form action="/cart/add.js" method="post" id="bulk-order__form">
         {% for product in collection.products %}
             {% if product.available %}
                 <!-- Product name -->
@@ -194,7 +194,7 @@
                             <!-- This product does not have customizable option, i.e. only has default variant -->
                             {% assign variant = product.first_available_variant %}
                             <div class="bulk-order__quantity">
-                                <input type="number" id="Quantity-{{ variant.id }}" name="updates[{{ variant.id }}]" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*">
+                                <input type="number" id="Quantity-{{ variant.id }}" name="{{ variant.id }}" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*">
                             </div>
                         {% else %}
                             <fieldset>
@@ -224,7 +224,7 @@
                                                     {% endunless %}
                                                     <td>{{ variant.price | money | default: '' }}</td>
                                                     <td class="bulk-order__quantity">
-                                                        <input type="number" id="Quantity-{{ variant.id }}" name="updates[{{ variant.id }}]" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*">
+                                                        <input type="number" id="Quantity-{{ variant.id }}" name="{{ variant.id }}" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*">
                                                     </td>
                                                 </tr>
                                             {% endif %}
@@ -252,18 +252,19 @@
         {{ paginate | default_pagination }}
     </nav>
     {% endpaginate %}
-    <!-- Add Button -->
+    <!-- Add Button
     <div class="bulk-order__add-button completely-hidden">
         <button class="btn btn--to-secondary btn--full product__add-to-cart-button">
             <span class="primary-text" aria-hidden="false" data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
             <span class="secondary-text" aria-hidden="true" data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
         </button>
     </div>
+    -->
 
     <!----------- Cart Drawer Refresh -------------->
     {%- assign product = collection.products[0] %}
     <div class="cart-drawer-refresh bulk-order__add-button" data-section-id="{{ section.id }}" data-section-type="product-template" data-variant-id="39647824516" itemscope itemtype="http://schema.org/Product">
-        <form class="product-form" action="/cart/add" method="post" enctype="multipart/form-data">
+        <form action="/cart/add" method="post" class="product-form" enctype="multipart/form-data">
             <select name="id" class="product-form__master-select supports-no-js completely-hidden" data-master-select>
                 <option selected="selected" data-sku="0" value="39647824516"></option>
             </select>
@@ -285,12 +286,14 @@
             {{ product | json }}
         </script>
     </div>
+</div>
 {% endunless %}
 
 <script>
     jQuery(function orderForm ($) {
         var $quantity = $('.bulk-order__quantity input[type="number"]');
 
+        // Returns a jQuery object of quantity inputs with non-zero value
         function nonZeroQuantity() {
             return $quantity.filter(function nonZeroTest(idx, elem) {
                 return (+elem.value);  // value is a string, convert to number with +
@@ -307,38 +310,63 @@
             }
         }
 
+        // Returns a Promise
+        function addToCart($quantitiesToAdd) {
+            if ($quantitiesToAdd.length) {
+                var inputEl = $quantitiesToAdd[0];
+                var qty = +(inputEl.value) || 0;
+                return (jQuery.ajax({
+                        method: 'POST',
+                        url: '/cart/add.js',
+                        data: {
+                            quantity: qty,
+                            id: inputEl.name
+                        },
+                        dataType: 'json'
+                    }).done(function addSuccess() {
+                        console.log('Add To Cart done...' + $quantitiesToAdd.length);
+                        // Resets quantity inputs
+                        inputEl.value = '0';
+                        // Removes current element from jQuery collection
+                        $quantitiesToAdd = $quantitiesToAdd.not(inputEl);
+
+//                        // Change button to secondary appearance
+//                        $target.addClass('btn--to-secondary-transitioned ajax-cart__toggle');
+
+                        // Add to cart the remaining quantities in jQuery collection
+                        if ($quantitiesToAdd.length) {
+                            addToCart($quantitiesToAdd);
+                        }
+                        else {
+                            // Add handler to reset button appearance when quantity input changes
+                            $('.bulk-order__variants-list').on('change', 'input', function resetBulkAddButton() {
+                                console.log('-------- resetBulkAddbutton ---------');
+                                $('.bulk-order__add-button button.product__add-to-cart-button').removeClass('btn--to-secondary-transitioned ajax-cart__toggle');
+                                $('.bulk-order__variants-list').off('change', 'input', resetBulkAddButton)
+                            });
+                        }
+                    })
+                );
+            }
+            else {
+                // Just return a resolved Promise
+                return $quantitiesToAdd.promise();
+            }
+        }
+
         $(window).on('beforeunload', confirmLeave);
 
-        $('.bulk-order__add-button button').on('click', function checkQuantityToUpdate(evt) {
-            var $quantitiesToUpdates = nonZeroQuantity();
-            var $target = $(evt.target);
+        $('.bulk-order__add-button button.product__add-to-cart-button').on('click', function bulkOrderAddToCart(evt) {
+            var $quantitiesToAdd = nonZeroQuantity();
+//            var $target = $(evt.target);
+
+            // If cart drawer present
+            // Add conditional code here...
+            // TODO...
             // Perform Ajax call only if there are non-zero quantities.
-            if ($quantitiesToUpdates.length) {
-                var serializedQuantities = $quantitiesToUpdates.serialize();
+            if ($quantitiesToAdd.length) {
 //                evt.preventDefault();
-                jQuery.ajax({
-                    method: 'POST',
-                    url: '/cart/update.js',
-                    data: serializedQuantities,
-                    dataType: 'json'
-                })
-                .done(function updateSuccess() {
-                    // If cart drawer present
-                    // Add conditional code here...
-//                    $('.cart-drawer-refresh button.product__add-to-cart-button').trigger('click');
-
-                    // Resets quantity inputs
-                    $quantitiesToUpdates.val('0');
-                    // Change button to secondary appearance
-//                    $target.addClass('btn--to-secondary-transitioned ajax-cart__toggle');
-
-                    // Add handler to reset button appearance when quantity input changes
-                    $('.bulk-order__variants-list').on('change', 'input', function resetBulkAddButton() {
-                        console.log('-------- resetBulkAddbutton ---------');
-                        $target.removeClass('btn--to-secondary-transitioned ajax-cart__toggle');
-                        $('.bulk-order__variants-list').off('change', 'input', resetBulkAddButton)
-                    });
-                });
+                addToCart($quantitiesToAdd);
             }
             else {
 //                if (!$target.hasClass('btn--to-secondary-transitioned')) {

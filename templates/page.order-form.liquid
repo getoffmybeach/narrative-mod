@@ -252,18 +252,17 @@
         {{ paginate | default_pagination }}
     </nav>
     {% endpaginate %}
-    <!-- Add Button
-    <div class="bulk-order__add-button completely-hidden">
+    <!-- Add Button -->
+    <div class="bulk-order__add-button">
         <button class="btn btn--to-secondary btn--full product__add-to-cart-button">
             <span class="primary-text" aria-hidden="false" data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
             <span class="secondary-text" aria-hidden="true" data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
         </button>
     </div>
-    -->
 
     <!----------- Cart Drawer Refresh -------------->
     {%- assign product = collection.products[0] %}
-    <div class="cart-drawer-refresh bulk-order__add-button" data-section-id="{{ section.id }}" data-section-type="product-template" data-variant-id="39647824516" itemscope itemtype="http://schema.org/Product">
+    <div class="cart-drawer-refresh completely-hidden" data-section-id="{{ section.id }}" data-section-type="product-template" data-variant-id="39647824516" itemscope itemtype="http://schema.org/Product">
         <form action="/cart/add" method="post" class="product-form" enctype="multipart/form-data">
             <select name="id" class="product-form__master-select supports-no-js completely-hidden" data-master-select>
                 <option selected="selected" data-sku="0" value="39647824516"></option>
@@ -271,11 +270,10 @@
             <div class="product-form__item product-form__quantity-selector completely-hidden">
                 <input class="product-form__quantity-input" type="number" id="Quantity-39647824516" name="quantity" value="0" min="0" pattern="[0-9]*">
             </div>
-            <!-- Add Button -->
-                <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite" aria-live="polite">
-                    <span class="primary-text" aria-hidden="false" data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
-                    <span class="secondary-text" aria-hidden="true" data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
-                </button>
+            <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite" aria-live="polite">
+                <span class="primary-text" aria-hidden="false" data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
+                <span class="secondary-text" aria-hidden="true" data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
+            </button>
         </form>
         {% comment %}
         ------------------------------------------------------------------------------
@@ -310,47 +308,68 @@
             }
         }
 
+        // Accepts a jQuery collection of input elements
         // Returns a Promise
-        function addToCart($quantitiesToAdd) {
+        function addToCart($quantitiesToAdd, callback) {
+            function addNext() {
+                console.log('Add To Cart done...' + $quantitiesToAdd.length);
+                // Resets quantity inputs
+                inputEl.value = '0';
+                // Removes current element from jQuery collection
+                $quantitiesToAdd = $quantitiesToAdd.not(inputEl);
+
+                // Add to cart the remaining quantities in jQuery collection
+                // If no more to add, invoke callback
+                if ($quantitiesToAdd.length) {
+                    addToCart($quantitiesToAdd, callback);
+                }
+                else {
+                    typeof callback === 'function' && callback();
+                }
+            }
+
             if ($quantitiesToAdd.length) {
                 var inputEl = $quantitiesToAdd[0];
                 var qty = +(inputEl.value) || 0;
-                return (jQuery.ajax({
-                        method: 'POST',
-                        url: '/cart/add.js',
-                        data: {
-                            quantity: qty,
-                            id: inputEl.name
-                        },
-                        dataType: 'json'
-                    }).done(function addSuccess() {
-                        console.log('Add To Cart done...' + $quantitiesToAdd.length);
-                        // Resets quantity inputs
-                        inputEl.value = '0';
-                        // Removes current element from jQuery collection
-                        $quantitiesToAdd = $quantitiesToAdd.not(inputEl);
-
-//                        // Change button to secondary appearance
-//                        $target.addClass('btn--to-secondary-transitioned ajax-cart__toggle');
-
-                        // Add to cart the remaining quantities in jQuery collection
-                        if ($quantitiesToAdd.length) {
-                            addToCart($quantitiesToAdd);
-                        }
-                        else {
-                            // Add handler to reset button appearance when quantity input changes
-                            $('.bulk-order__variants-list').on('change', 'input', function resetBulkAddButton() {
-                                console.log('-------- resetBulkAddbutton ---------');
-                                $('.bulk-order__add-button button.product__add-to-cart-button').removeClass('btn--to-secondary-transitioned ajax-cart__toggle');
-                                $('.bulk-order__variants-list').off('change', 'input', resetBulkAddButton)
-                            });
-                        }
-                    })
-                );
+                if (inputEl.name && qty) {
+                    return (jQuery.ajax({
+                            method: 'POST',
+                            url: '/cart/add.js',
+                            data: {
+                                quantity: qty,
+                                id: inputEl.name
+                            },
+                            dataType: 'json'
+                        }).done(addNext)
+                    );
+                }
+                else {
+                    addNext();
+                }
             }
-            else {
-                // Just return a resolved Promise
-                return $quantitiesToAdd.promise();
+            // Just return a resolved Promise
+            return $quantitiesToAdd.promise();
+        }
+
+        // Refresh Cart Drawwer and Change Add button appearance
+        function bulkOrderAddToCartDone(button) {
+            {% if settings.show_cart_drawer %}
+                // Refresh cart drawer
+                console.log('Refresh Cart Drawer...');
+                $('.cart-drawer-refresh button.product__add-to-cart-button').trigger('click');
+            {% endif %}
+
+            var $button = $(button);
+            if ($button.is('button')) {
+                // Change button to secondary appearance
+                $button.addClass('btn--to-secondary-transitioned ajax-cart__toggle');
+
+                // Add handler to reset button appearance when quantity input changes
+                $('.bulk-order__variants-list').on('change', 'input', function resetBulkAddButton() {
+                    console.log('-------- resetBulkAddbutton ---------');
+                    $button.removeClass('btn--to-secondary-transitioned ajax-cart__toggle');
+                    $('.bulk-order__variants-list').off('change', 'input', resetBulkAddButton)
+                });
             }
         }
 
@@ -358,15 +377,14 @@
 
         $('.bulk-order__add-button button.product__add-to-cart-button').on('click', function bulkOrderAddToCart(evt) {
             var $quantitiesToAdd = nonZeroQuantity();
-//            var $target = $(evt.target);
 
             // If cart drawer present
             // Add conditional code here...
             // TODO...
+
             // Perform Ajax call only if there are non-zero quantities.
             if ($quantitiesToAdd.length) {
-//                evt.preventDefault();
-                addToCart($quantitiesToAdd);
+                addToCart($quantitiesToAdd, bulkOrderAddToCartDone.bind(null, evt.target));
             }
             else {
 //                if (!$target.hasClass('btn--to-secondary-transitioned')) {

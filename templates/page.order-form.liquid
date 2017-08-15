@@ -310,9 +310,9 @@
 
         // Accepts a jQuery collection of input elements
         // Returns a Promise
+        // Note: the received collection will be altered
         function addToCart($quantitiesToAdd, callback) {
             function addNext() {
-                console.log('Add To Cart done...' + $quantitiesToAdd.length);
                 // Resets quantity inputs
                 inputEl.value = '0';
                 // Removes current element from jQuery collection
@@ -355,7 +355,6 @@
         function bulkOrderAddToCartDone(button) {
             {% if settings.show_cart_drawer %}
                 // Refresh cart drawer
-                console.log('Refresh Cart Drawer...');
                 $('.cart-drawer-refresh button.product__add-to-cart-button').trigger('click');
             {% endif %}
 
@@ -366,7 +365,6 @@
 
                 // Add handler to reset button appearance when quantity input changes
                 $('.bulk-order__variants-list').on('change', 'input', function resetBulkAddButton() {
-                    console.log('-------- resetBulkAddbutton ---------');
                     $button.removeClass('btn--to-secondary-transitioned ajax-cart__toggle');
                     $('.bulk-order__variants-list').off('change', 'input', resetBulkAddButton)
                 });
@@ -385,12 +383,6 @@
             // Perform Ajax call only if there are non-zero quantities.
             if ($quantitiesToAdd.length) {
                 addToCart($quantitiesToAdd, bulkOrderAddToCartDone.bind(null, evt.target));
-            }
-            else {
-//                if (!$target.hasClass('btn--to-secondary-transitioned')) {
-//                    return false;
-//                }
-//                evt.preventDefault();
             }
         });
     });

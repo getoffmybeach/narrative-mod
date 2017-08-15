@@ -1,7 +1,12 @@
 {% comment %}
-Dien:
-Added support for custom line item properties.
-Added quantity-in-cart tooltip.
+DIEN MOD:
++ Added support for custom line item properties.
+    - they can be added from Theme Editor
+    - they can be set as "required" (or not) from the Theme Editor
+    - their names can be customized from Theme Editor
+    - their type (text, file, number, checkbox) can set from Theme Editor
+    - For Type=number, the range can be set from Theme Editor
++ Added quantity-in-cart tooltip.
 {% endcomment %}
 <style>
     .product__add-to-cart-container {
@@ -132,11 +137,10 @@ Added quantity-in-cart tooltip.
   {% endif %}
 
   {% comment %}
-  Dien
+  DIEN MOD
   ------------------------------------------------------------------------------
   Custom Properties
   ------------------------------------------------------------------------------
-  TODO: rename the class names. (?)
   {% endcomment %}
   {% unless section.blocks == empty %}
     {% for block in section.blocks %}
@@ -170,16 +174,16 @@ Added quantity-in-cart tooltip.
   {% endunless %}
 
   {% comment %}
-  ------------------------------------------------------------------------------
-  Cart
-  ------------------------------------------------------------------------------
-  DIEN:
+  DIEN MOD:
     Added "tooltip" indicating quantity of viewed product already in cart.
     Note: An extra div of class product_add-to-cart-container was added as parent of both the button and the tooltip.
     This allows the tooltip to be absolutely positioned to the top-right corner of container, which has the same dimensions as the button's.
     So the tooltip will always apprear on the same corner of the button.
     Another option is to have the tooltip as a child of button but the effects on mouse events and outlining on focus make it less ideal.
     Example: hovering on the tooltip would highlight the button, even though visually, part of the tooltip appears outside the button.
+  ------------------------------------------------------------------------------
+  Cart
+  ------------------------------------------------------------------------------
   {% endcomment %}
   <div class="product__add-to-cart">
     <div class="product__add-to-cart-container">
@@ -201,12 +205,13 @@ Added quantity-in-cart tooltip.
   </div>
 </form>
 <script>
-    /* DIEN: "Quantity in cart" tooltip */
+    /* DIEN MOD:
+    * "Quantity in cart" tooltip
+    * */
     jQuery(function quantityTooltip($) {
 
         function updateTooltip() {
             var productId = {{ product.id | default: 0 }};
-            console.log('--> updateTooltip: perform AJAX ');
             return ($.ajax({
                 method: 'GET',
                 url: '/cart.js',
@@ -245,15 +250,10 @@ Added quantity-in-cart tooltip.
         // Variable jQuery is used here instead of $ as some themes like Narrative augmented jQuery.
         // If augmented jQuery's ajax() was used throughout the theme, adding handlers with $ will not trigger them.
         jQuery(document).on('ajaxComplete.tooltip', function listenToCartAjax(event, request, setting) {
-            console.log('--> ajaxComplete Handler called. URL: ' + setting.url + ' ID: ' + setting.requestId);
             if (/cart\/(?:update|add|change|clear)/i.test(setting.url)) {
-//                console.log('[[OFF]]: ajaxComplete -- inside listenToCartAjax');
                 jQuery(document).off('ajaxComplete.tooltip');
-//                let id = Math.floor(Math.random() * 10001);
                 updateTooltip().always(function attachAjaxCompleteHandler() {
-//                    console.log('[[OFF]]: ajaxComplete -- inside attachAjaxCompleteHandler');
                     jQuery(document).off('ajaxComplete.tooltip');
-//                    console.log('[[ON]]: ajaxComplete -- inside attachAjaxCompleteHandler');
                     jQuery(document).on('ajaxComplete.tooltip', listenToCartAjax);
                 });
             }

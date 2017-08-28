@@ -10,6 +10,8 @@ Notable features:
 - Support for items that do not have a variant
 - Support for both the regular cart page and the cart drawer
 
+![bulk-order](https://user-images.githubusercontent.com/4752832/29792516-a25db8f0-8c0e-11e7-94cb-516c8f0d784e.png)
+
 ## Gift Wrapping
 Heavily modified version of Caroline Hill's [sample](https://github.com/carolineschnapp/carolineschnapp-gift-wrap/blob/master/gift-wrapping-multiple-charge.liquid) adding the following features:
 
@@ -18,6 +20,8 @@ Heavily modified version of Caroline Hill's [sample](https://github.com/caroline
 - Auto adjustment of gift wrap item count when number of items in cart changes (applies to per-item cost model only)
 - Auto removal of gift wrap item if all other items in cart are removed
 - Autosave of gift-wrap note
+
+![gift-wrap](https://user-images.githubusercontent.com/4752832/29792527-ad1a5a0a-8c0e-11e7-9b7b-39a8f1a37254.png)
 
 ## Shipping Calculator
 Additional features and improvements from Caroline Hill's [sample](https://github.com/carolineschnapp/shipping-calculator/blob/master/shipping-calculator.liquid):
@@ -29,10 +33,10 @@ Additional features and improvements from Caroline Hill's [sample](https://githu
      - Focus remains on the submit button, if the form submission was triggered from the said button
      - Highlights (with transition effects) and move focus on zipcode field if submitted zipcode was invalid
      - Highlight and coordinated transition effects of zipcode error message
-     
-NOTE: Some of these custom enhancements may be better implemented in jquery.cart.js if we had access to the un-minimized version.
 
-## Alternate Product Form
+![shipping-calculator](https://user-images.githubusercontent.com/4752832/29792531-aefc0166-8c0e-11e7-8d50-97de04497861.png)
+     
+## Alternate Product Page
 Added features:
 - Support for custom line item properties.
     - they can be added from Theme Editor
@@ -41,3 +45,9 @@ Added features:
     - their type (text, file, number, checkbox) can set from Theme Editor
     - For Type=number, the range can be set from Theme Editor
 - Added a "quantity-in-cart" indicator showing the number of unit of the viewed product already in cart.
+
+![alt-product-page](https://user-images.githubusercontent.com/4752832/29792535-b07cf7c0-8c0e-11e7-886f-0aff16b25b1b.png)
+
+- - - 
+#### Note
+Some of these custom features may be better implemented if we had access to the un-minimized version of jquery.cart.js and theme.js.

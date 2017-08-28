@@ -34,7 +34,7 @@ Additional features and improvements from Caroline Hill's [sample](https://githu
      - Highlights (with transition effects) and move focus on zipcode field if submitted zipcode was invalid
      - Highlight and coordinated transition effects of zipcode error message
 
-![shipping-calculator](https://user-images.githubusercontent.com/4752832/29793874-a5a6d7c6-8c13-11e7-86a7-b39623b4b18a.png)
+![shipping-calculator](https://user-images.githubusercontent.com/4752832/29795589-dcefe964-8c1a-11e7-9b92-311acee8f153.png)
      
 ## Alternate Product Page
 Added features:

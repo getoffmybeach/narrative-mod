@@ -8,7 +8,7 @@ Features:
 - Support for both the regular cart page and the cart drawer
 
 ## Gift Wrapping
-Heavily modified the original version by Caroline Hill to add following features:
+Heavily modified version of Caroline Hill's[sample](https://github.com/carolineschnapp/carolineschnapp-gift-wrap/blob/master/gift-wrapping-multiple-charge.liquid)adding the following features:
 
 - Support for both regular cart and cart drawer
 - Support for two cost models (settable in theme's general settings): 1) per item and 2) fixed cost
@@ -17,7 +17,7 @@ Heavily modified the original version by Caroline Hill to add following features
 - Autosave of gift-wrap note
 
 ## Shipping Calculator
-Additional features and improvements:
+Additional features and improvements from Caroline Hill's[sample](https://github.com/carolineschnapp/shipping-calculator/blob/master/shipping-calculator.liquid):
 - Auto-saves of user-entered address into session storage upon leaving page.
 - Restores user-entered address from session storage on cart page load.
 - UX improvements:

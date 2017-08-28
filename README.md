@@ -1,13 +1,13 @@
 # Narrative-Mod
 
-##Bulk Order Page
+## Bulk Order Page
 Features:
 - Responsive design using flexbox
 - Support for items with variants composed of up to 3 options
 - Support for items that do not have a variant
 - Support for both the regular cart page and the cart drawer
 
-##Gift Wrapping
+## Gift Wrapping
 Heavily modified the original version by Caroline Hill to add following features:
 
 - Support for both regular cart and cart drawer
@@ -16,7 +16,7 @@ Heavily modified the original version by Caroline Hill to add following features
 - Auto removal of gift wrap item if all other items in cart are removed
 - Autosave of gift-wrap note
 
-##Shipping Calculator
+## Shipping Calculator
 Additional features and improvements:
 - Auto-saves of user-entered address into session storage upon leaving page.
 - Restores user-entered address from session storage on cart page load.

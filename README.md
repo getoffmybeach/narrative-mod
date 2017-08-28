@@ -14,7 +14,7 @@ Notable features:
 Heavily modified version of Caroline Hill's [sample](https://github.com/carolineschnapp/carolineschnapp-gift-wrap/blob/master/gift-wrapping-multiple-charge.liquid) adding the following features:
 
 - Support for both regular cart and cart drawer
-- Support for two cost models (settable in theme's general settings): 1) per item and 2) fixed cost
+- Support for two cost models (settable in theme's general settings): per-item and fixed-cost
 - Auto adjustment of gift wrap item count when number of items in cart changes (applies to per-item cost model only)
 - Auto removal of gift wrap item if all other items in cart are removed
 - Autosave of gift-wrap note

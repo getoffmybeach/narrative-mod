@@ -10,7 +10,7 @@ Notable features:
 - Support for items that do not have a variant
 - Support for both the regular cart page and the cart drawer
 
-![bulk-order](https://user-images.githubusercontent.com/4752832/29792516-a25db8f0-8c0e-11e7-94cb-516c8f0d784e.png)
+![bulk-order](https://user-images.githubusercontent.com/4752832/29793864-9b4d62b8-8c13-11e7-80d3-d01e48bf2a0b.png)
 
 ## Gift Wrapping
 Heavily modified version of Caroline Hill's [sample](https://github.com/carolineschnapp/carolineschnapp-gift-wrap/blob/master/gift-wrapping-multiple-charge.liquid) adding the following features:
@@ -21,7 +21,7 @@ Heavily modified version of Caroline Hill's [sample](https://github.com/caroline
 - Auto removal of gift wrap item if all other items in cart are removed
 - Autosave of gift-wrap note
 
-![gift-wrap](https://user-images.githubusercontent.com/4752832/29792527-ad1a5a0a-8c0e-11e7-9b7b-39a8f1a37254.png)
+![gift-wrap](https://user-images.githubusercontent.com/4752832/29793871-a38e3ac4-8c13-11e7-8c02-eaac8d26f6cd.png)
 
 ## Shipping Calculator
 Additional features and improvements from Caroline Hill's [sample](https://github.com/carolineschnapp/shipping-calculator/blob/master/shipping-calculator.liquid):
@@ -34,7 +34,7 @@ Additional features and improvements from Caroline Hill's [sample](https://githu
      - Highlights (with transition effects) and move focus on zipcode field if submitted zipcode was invalid
      - Highlight and coordinated transition effects of zipcode error message
 
-![shipping-calculator](https://user-images.githubusercontent.com/4752832/29792531-aefc0166-8c0e-11e7-8d50-97de04497861.png)
+![shipping-calculator](https://user-images.githubusercontent.com/4752832/29793874-a5a6d7c6-8c13-11e7-86a7-b39623b4b18a.png)
      
 ## Alternate Product Page
 Added features:
@@ -46,7 +46,7 @@ Added features:
     - For Type=number, the range can be set from Theme Editor
 - Added a "quantity-in-cart" indicator showing the number of unit of the viewed product already in cart.
 
-![alt-product-page](https://user-images.githubusercontent.com/4752832/29792535-b07cf7c0-8c0e-11e7-886f-0aff16b25b1b.png)
+![alt-product-page](https://user-images.githubusercontent.com/4752832/29793881-aacd856a-8c13-11e7-9210-35269824ac3f.png)
 
 - - - 
 #### Note

@@ -1,7 +1,10 @@
 # Narrative-Mod
 
+This is a mod of Shopify's *Narrative* theme.  *Narrative-Mod* theme adds implementations for a bulk order page, a gift-wrapping option, a shipping calculator and an alternate product page.
+
 ## Bulk Order Page
-Features:
+The *Bulk Order* page is accessible from the menu. This page offers a quick way to add to the cart multiple products and variants from a collection.
+Notable features:
 - Responsive design using flexbox
 - Support for items with variants composed of up to 3 options
 - Support for items that do not have a variant
@@ -28,8 +31,7 @@ Additional features and improvements from Caroline Hill's [sample](https://githu
      - Highlight and coordinated transition effects of zipcode error message
      
 NOTE: Some of these custom enhancements may be better implemented in jquery.cart.js if we had access to the un-minimized version.
-     
-     
+
 ## Alternate Product Form
 Added features:
 - Support for custom line item properties.

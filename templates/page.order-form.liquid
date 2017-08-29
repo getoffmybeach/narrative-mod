@@ -9,8 +9,6 @@ Bulk Order Page features:
 {% endcomment %}
 <style>
     .bulk-order {
-        /*width: 80%;*/
-        /*margin: 20px auto;*/
         font-size: 1.2rem;
     }
     .bulk-order__header {
@@ -22,11 +20,6 @@ Bulk Order Page features:
         width: 100%;
         background-color: #f5f4f1;
     }
-    /*.bulk-order__row:after {*/
-        /*content: " ";*/
-        /*display: table;*/
-        /*clear: both;*/
-    /*}*/
     .bulk-order__title {
         width: 100%;
         padding: 20px 28px 2px 28px;
@@ -48,9 +41,7 @@ Bulk Order Page features:
     }
     .bulk-order__price {
         width: 100%;
-        /*padding-left: 28px;*/
         margin-bottom: 18px;
-        /*float: left;*/
         font-size: 1.2em;
         font-weight: bold;
     }
@@ -58,19 +49,13 @@ Bulk Order Page features:
         width: 100%;
         margin-bottom: 18px;
         font-size: 1.2rem;
-        /*padding: 0 28px;*/
-        /*min-height: 110px;*/
-        /*float: left;*/
     }
     .bulk-order__variant {
         font-size: 1.1rem;
     }
     .bulk-order__clear-button {
-        /*float: left;*/
         width: 100%;
-        /*padding-right: 28px;*/
         margin-bottom: 28px;
-        /*font-size: 0.9em;*/
     }
     .bulk-order__add-button {
         position: fixed;
@@ -149,10 +134,7 @@ Bulk Order Page features:
         }
         .bulk-order__description {
             width: 100%;
-            /*max-height: 168px ;*/
-            /*padding: 0 28px;*/
             margin-bottom: 18px;
-            /*float: left;*/
             overflow: auto;
         }
     }
@@ -322,6 +304,8 @@ Bulk Order Page features:
         // Returns a Promise
         // Note: the received collection will be altered
         function bulkOrderAddToCart($quantitiesToAdd, callback) {
+            var inputEl = $quantitiesToAdd[0];
+            var qty = +(inputEl.value) || 0;
             function addNext() {
                 // Resets quantity inputs
                 inputEl.value = '0';
@@ -339,10 +323,8 @@ Bulk Order Page features:
             }
 
             if ($quantitiesToAdd.length) {
-                var inputEl = $quantitiesToAdd[0];
-                var qty = +(inputEl.value) || 0;
                 if (inputEl.name && qty) {
-                    return (jQuery.ajax({
+                    return jQuery.ajax({
                             method: 'POST',
                             url: '/cart/add.js',
                             data: {
@@ -350,8 +332,7 @@ Bulk Order Page features:
                                 id: inputEl.name
                             },
                             dataType: 'json'
-                        }).done(addNext)
-                    );
+                            }).done(addNext);
                 }
                 else {
                     addNext();
@@ -363,12 +344,13 @@ Bulk Order Page features:
 
         // Refresh Cart Drawwer and Change Add button appearance
         function bulkOrderAddToCartDone(button) {
+            var $button = $(button);
+
             {% if settings.show_cart_drawer %}
                 // Refresh cart drawer
                 $('.cart-drawer-refresh button.product__add-to-cart-button').trigger('click');
             {% endif %}
 
-            var $button = $(button);
             if ($button.is('button')) {
                 // Change button to secondary appearance
                 $button.addClass('btn--to-secondary-transitioned ajax-cart__toggle');

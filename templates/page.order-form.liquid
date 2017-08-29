@@ -1,20 +1,385 @@
+{% comment %}
+DIEN MOD
+Bulk Order Page features:
+- Responsive design using flexbox
+- Supports items with variants composed of up to 3 options
+- Supports items that have no variant
+- Supports regular cart page and cart drawer
+
+{% endcomment %}
+<style>
+    .bulk-order {
+        font-size: 1.2rem;
+    }
+    .bulk-order__header {
+        margin: 30px 0;
+        text-align: center;
+        font-size: 2em;
+    }
+    .bulk-order__row {
+        width: 100%;
+        background-color: #f5f4f1;
+    }
+    .bulk-order__title {
+        width: 100%;
+        padding: 20px 28px 2px 28px;
+        font-size: 1.6em;
+        font-family: Baskerville MT, "Baskerville Old Face", "Hoefler Text", Garamond, "Times New Roman", serif;
+    }
+    .bulk-order__pagination {
+        text-align: right;
+    }
+    .bulk-order__content--flex {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+    .bulk-order__box {
+        margin: 0 28px;
+    }
+    .bulk-order__image {
+        width: 100%;
+    }
+    .bulk-order__price {
+        width: 100%;
+        margin-bottom: 18px;
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+    .bulk-order__variants-list {
+        width: 100%;
+        margin-bottom: 18px;
+        font-size: 1.2rem;
+    }
+    .bulk-order__variant {
+        font-size: 1.1rem;
+    }
+    .bulk-order__clear-button {
+        width: 100%;
+        margin-bottom: 28px;
+    }
+    .bulk-order__add-button {
+        position: fixed;
+        position: -webkit-sticky;
+        position: sticky;
+        right: 0;
+        left: 0;
+        bottom: 15px;
+        max-width: 400px;
+        margin: 8px auto 15px auto;
+    }
+    .bulk-order__main .bulk-order__row:nth-child(4n+1),
+    .bulk-order__main .bulk-order__row:nth-child(4n+2) {
+        background-color: #edece9;
+    }
+    @media only screen and (max-width: 749px) {
+        .bulk-order {
+            font-size: 1.1rem;
+        }
+        .bulk-order__content--flex {
+            flex-direction: column;
+            align-items: center;
+        }
+        .box--middle {
+            max-width: 320px;       /* Same max-width as product image */
+        }
+        .bulk-order__description {
+            display: none;
+        }
+        .bulk-order__variants-list {
+            font-size: 1rem;
+        }
+        .bulk-order__variants-list fieldset {
+            padding: 10px;
+        }
+        .bulk-order__variants-list table {
+            font-size: 0.9rem;
+        }
+        .bulk-order__variants-list th,
+        .bulk-order__variants-list td {
+            width: 20%;
+            max-width: 50px;
+            padding: 0 4px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        td.bulk-order__quantity {
+            max-width: 100%;
+        }
+        .bulk-order__variants-list input[type="number"] {
+            width: 100%;
+            min-width: 58px;
+            margin-bottom: 10px;
+            padding: 2px 13px;
+            font-size: 1.4rem;
+        }
+        .bulk-order__variant {
+            font-size: 0.9rem;
+        }
+    }
+    @media only screen and (min-width: 750px) {
+        .bulk-order__content--flex {
+            flex-direction: row;
+        }
+        .bulk-order__box {
+            min-height: 270px;
+        }
+        .box--start {
+            flex-basis: 20%;
+        }
+        .box--middle {
+            flex-basis: 50%;
+        }
+        .box--end {
+            flex-basis: 20%;
+        }
+        .bulk-order__description {
+            width: 100%;
+            margin-bottom: 18px;
+            overflow: auto;
+        }
+    }
+    .completely-hidden {
+        display: none;
+    }
+</style>
+
 {% assign collection = collections.pf-bikes %}
 
 {% unless collection.products_count <= 0 %}
-<table>
-    {% for product in collection.products %}
-        <h2>{{ product.title }}</h2>
-        {% unless product.options_with_values == empty %}
-            {% for option in product.options_with_values%}
-                <label for="{{ product.id }}-{{ option.name }}">{{ option.name }}</label>
-                {% for value in option.values %}
-                    <select name="options[{{ option.name }}]" id="{{ product.id }}-{{ option.name }}">
-                        <option value="{{ value }}">{{ value }}</option>
-                    </select>
-                    {{ value }}
-                {% endfor %}
-            {% endfor %}
-        {% endunless %}
-    {% endfor %}
-</table>
+<div class="bulk-order page-width">
+    <header class="bulk-order__header">{{ page.title }}</header>
+    {% paginate collection.products by 10 %}
+    <nav class="bulk-order__pagination">
+        {{ paginate | default_pagination }}
+    </nav>
+    <div class="bulk-order__main">
+        <form action="/cart/add.js" method="post" id="bulk-order__form">
+        {% for product in collection.products %}
+            {% if product.available %}
+                <!-- Product name -->
+                <div class="bulk-order__row"><p class="bulk-order__title">{{ product.title }}</p></div>
+                <div class="bulk-order__row bulk-order__content--flex">
+                    <div class="bulk-order__box box--start">
+                        <!-- Image -->
+                        <div class="bulk-order__image">
+                            <a href="{{ product.url }}">
+                                <img src="{{ product.featured_image | product_img_url: '320x320', format: 'pjpg' }}" alt="{{ product.title }}">
+                            </a>
+                        </div>
+                        <!-- Price -->
+                        <div class="bulk-order__price">
+                            {% if product.price_varies %}
+                                Starting from {{ product.price_min | money}}
+                            {% else %}
+                                Price: {{ product.price | money }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="bulk-order__box box--middle">
+                        <!-- Description -->
+                        <div class="bulk-order__description">{{ product.description }}</div>
+
+                        <!-- Variants -->
+                        <div class="bulk-order__variants-list">
+                        {% if product.has_only_default_variant %}
+                            <!-- This product does not have customizable option, i.e. only has default variant -->
+                            {% assign variant = product.first_available_variant %}
+                            <div class="bulk-order__quantity">
+                                <input type="number" id="Quantity-{{ variant.id }}" name="{{ variant.id }}" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*">
+                            </div>
+                        {% else %}
+                            <fieldset>
+                                <legend>Variants</legend>
+                                <table>
+                                    {% unless product.options_with_values == empty %}
+                                    <thead>
+                                        <tr>
+                                            {% for option in product.options_with_values %}
+                                            <th>{{ option.name }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    {% endunless %}
+                                    <tbody>
+                                        {% for variant in product.variants %}
+                                            {% if variant.available %}
+                                                <tr class="bulk-order__variant">
+                                                    {% unless variant.option1 == blank %}
+                                                        <td>{{ variant.option1 | downcase | capitalize | default: '' }}</td>
+                                                    {% endunless %}
+                                                    {% unless variant.option2 == blank %}
+                                                        <td>{{ variant.option2 | downcase | capitalize | default: '' }}</td>
+                                                    {% endunless %}
+                                                    {% unless variant.option3 == blank %}
+                                                        <td>{{ variant.option3 | downcase | capitalize | default: '' }}</td>
+                                                    {% endunless %}
+                                                    <td>{{ variant.price | money | default: '' }}</td>
+                                                    <td class="bulk-order__quantity">
+                                                        <input type="number" id="Quantity-{{ variant.id }}" name="{{ variant.id }}" value="0" min="0" {% unless variant.inventory_policy == 'continue' or variant.inventory_management == blank %} max="{{ variant.inventory_quantity }}" {% endunless %} step="1" pattern="[0-9]*">
+                                                    </td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </fieldset>
+                        {% endif %}
+                        </div>
+                    </div>
+{% comment %}
+                    <div class="bulk-order__box box--end">
+                        <!-- Clear Button -->
+                        <div class="bulk-order__clear-button">
+                            <button class="btn btn--full"><span class="primary-text" aria-hidden="false">Clear</span></button>
+                        </div>
+                    </div>
+{% endcomment %}
+                </div>
+            {% endif %}
+        {% endfor %}
+        </form>
+    </div>
+    <nav class="bulk-order__pagination">
+        {{ paginate | default_pagination }}
+    </nav>
+    {% endpaginate %}
+    <!-- Add Button -->
+    <div class="bulk-order__add-button">
+        <button class="btn btn--to-secondary btn--full product__add-to-cart-button">
+            <span class="primary-text" aria-hidden="false" data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
+            <span class="secondary-text" aria-hidden="true" data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
+        </button>
+    </div>
+
+    <!----------- Cart Drawer Refresh -------------->
+    {%- assign product = collection.products[0] %}
+    <div class="cart-drawer-refresh completely-hidden" data-section-id="{{ section.id }}" data-section-type="product-template" data-variant-id="39647824516" itemscope itemtype="http://schema.org/Product">
+        <form action="/cart/add" method="post" class="product-form" enctype="multipart/form-data">
+            <select name="id" class="product-form__master-select supports-no-js completely-hidden" data-master-select>
+                <option selected="selected" data-sku="0" value="39647824516"></option>
+            </select>
+            <div class="product-form__item product-form__quantity-selector completely-hidden">
+                <input class="product-form__quantity-input" type="number" id="Quantity-39647824516" name="quantity" value="0" min="0" pattern="[0-9]*">
+            </div>
+            <button class="btn btn--to-secondary btn--full product__add-to-cart-button" data-cart-submit type="submit" name="add" aria-live="polite" aria-live="polite">
+                <span class="primary-text" aria-hidden="false" data-cart-primary-submit-text>{{ 'products.product.add_to_cart' | t }}</span>
+                <span class="secondary-text" aria-hidden="true" data-cart-secondary-submit-text>{{ 'products.product.view_cart' | t }}</span>
+            </button>
+        </form>
+        {% comment %}
+        ------------------------------------------------------------------------------
+        Product Data
+        ------------------------------------------------------------------------------
+        {% endcomment %}
+        <script type="application/json" data-product-json>
+            {{ product | json }}
+        </script>
+    </div>
+</div>
 {% endunless %}
+
+<script>
+    jQuery(function orderForm ($) {
+        // All quantity fields
+        var $quantity = $('.bulk-order__quantity input[type="number"]');
+
+        // Returns a jQuery object of quantity inputs with non-zero value
+        function nonZeroQuantity() {
+            return $quantity.filter(function nonZeroTest(idx, elem) {
+                return (+elem.value);  // value is a string, convert to number with +
+            });
+        }
+
+        // Ask for confirmation before leaving page if some quantities fields are non-zero.
+        function confirmLeave(e) {
+            var confirm = 'Are you sure?';
+
+            if (nonZeroQuantity().length) {
+                (e || window.event).returnValue = confirm;
+                return confirm;
+            }
+        }
+
+        // Accepts a jQuery collection of input elements
+        // Returns a Promise
+        // Note: the received collection will be altered
+        function bulkOrderAddToCart($quantitiesToAdd, callback) {
+            var inputEl = $quantitiesToAdd[0];
+            var qty = +(inputEl.value) || 0;
+            function addNext() {
+                // Resets quantity inputs
+                inputEl.value = '0';
+                // Removes current element from jQuery collection
+                $quantitiesToAdd = $quantitiesToAdd.not(inputEl);
+
+                // Add to cart the remaining quantities in jQuery collection
+                // If no more to add, invoke callback
+                if ($quantitiesToAdd.length) {
+                    bulkOrderAddToCart($quantitiesToAdd, callback);
+                }
+                else {
+                    typeof callback === 'function' && callback();
+                }
+            }
+
+            if ($quantitiesToAdd.length) {
+                if (inputEl.name && qty) {
+                    return jQuery.ajax({
+                            method: 'POST',
+                            url: '/cart/add.js',
+                            data: {
+                                quantity: qty,
+                                id: inputEl.name
+                            },
+                            dataType: 'json'
+                            }).done(addNext);
+                }
+                else {
+                    addNext();
+                }
+            }
+            // Just return a resolved Promise
+            return $quantitiesToAdd.promise();
+        }
+
+        // Refresh Cart Drawwer and Change Add button appearance
+        function bulkOrderAddToCartDone(button) {
+            var $button = $(button);
+
+            {% if settings.show_cart_drawer %}
+                // Refresh cart drawer
+                $('.cart-drawer-refresh button.product__add-to-cart-button').trigger('click');
+            {% endif %}
+
+            if ($button.is('button')) {
+                // Change button to secondary appearance
+                $button.addClass('btn--to-secondary-transitioned ajax-cart__toggle');
+
+                // Add handler to reset button appearance when quantity input changes
+                $('.bulk-order__variants-list').on('change', 'input', function resetBulkAddButton() {
+                    $button.removeClass('btn--to-secondary-transitioned ajax-cart__toggle');
+                    $('.bulk-order__variants-list').off('change', 'input', resetBulkAddButton)
+                });
+            }
+        }
+
+        $(window).on('beforeunload', confirmLeave);
+
+        $('.bulk-order__add-button button.product__add-to-cart-button').on('click', function bulkOrderAddClicked(evt) {
+            var $quantitiesToAdd = nonZeroQuantity();
+
+            // Perform Ajax call only if there are non-zero quantities.
+            if ($quantitiesToAdd.length) {
+                bulkOrderAddToCart($quantitiesToAdd, bulkOrderAddToCartDone.bind(null, evt.target));
+            }
+
+            // If cart drawer is disabled, then clicking on the button with secondary label will navigate to cart page
+            // If cart drawer is enabled, then theme.js will take care of sliding the drawer out.
+            {% unless settings.show_cart_drawer %}
+            if ($(evt.target).hasClass('btn--to-secondary-transitioned')) {
+                window.location.href = '/cart';
+            }
+            {% endunless %}
+        });
+    });
+</script>

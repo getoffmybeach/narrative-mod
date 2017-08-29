@@ -27,7 +27,6 @@
 </div>
 
 <style>
-    /* TODO: Revise class names. Use BEM or SMACSS */
     .cart-drawer__shipping-calculator-container {
         margin-top: 50px;
     }
@@ -85,18 +84,24 @@
 {{ 'jquery.cart.min.js' | asset_url | script_tag }}
 
 <script>
-    // NOTE:  Some of these custom enhancements may be better implemented in jquery.cart.js.
-    // if we had access to the un-minimized version.
+    /* DIEN MOD
+     * + Added auto-save of user-entered address into session storage upon leaving page.
+     * + Added UX improvements:
+     *      - Pressing ENTER on shipping form input fields does not perform a form submit (and page refresh), unless it's on the submit button
+     *      - If ENTER was pressed on any input fields (except button) and the zipcode field is empty, move focus to zipcode field
+     *      - Focus remains on the submit button, if the form submission was triggered from the said button
+     *      - Highlights (with transition effects) and move focus on zipcode field if submitted zipcode was invalid
+     *
+     * NOTE: Some of these custom enhancements may be better implemented in jquery.cart.js.
+     * if we had access to the un-minimized version.
+     */
 
-    // Dien
     // Retrieves user-entered address info from session storage, if any, and sets as defaults
     jQuery(function loadSessionStoredAddress() {
         try {
-            console.log('Restoring saved shipping address...');
             const country = sessionStorage.getItem('shipping-calculator-country');
             const province = sessionStorage.getItem('shipping-calculator-province');
             const zip = sessionStorage.getItem('shipping-calculator-zip');
-//            console.log('Setting country to: ' + `#address_country option[value="${country}"]`);
             if (country) jQuery('#address_country').attr('data-default', country);
             if (province) jQuery('#address_province').attr('data-default', province);
             if (zip) jQuery('#address_zip').val(jQuery('<div>').html(zip).text());
@@ -106,23 +111,16 @@
         }
     });
 
-    // Dien
     // Stores user-entered address info in session storage before leaving cart page
     jQuery(function () {
         // Store field values before cart page unload
         jQuery(window).on('beforeunload', function sessionStoreAddress() {
-            console.log('Session storing shipping address...');
             try {
                 var zip = jQuery('#address_zip').val();
                 const sanitizedZip = zip ? jQuery('<div>').text(zip).html() : '';
                 sessionStorage.setItem('shipping-calculator-country', jQuery('#address_country').val() || '');
                 sessionStorage.setItem('shipping-calculator-province', jQuery('#address_province').val() || '');
                 sessionStorage.setItem('shipping-calculator-zip', sanitizedZip);
-                // Debug
-                console.log("Sanitized Zip: " + sanitizedZip);
-                console.log(sessionStorage.getItem('shipping-calculator-country'));
-                console.log(sessionStorage.getItem('shipping-calculator-province'));
-                console.log(sessionStorage.getItem('shipping-calculator-zip'));
             }
             catch(e) {
                 console.log('Session storage not available: ' + e);
@@ -137,38 +135,28 @@
         moneyFormat: {{ shop.money_with_currency_format | json }}
     } );
 
-    // Dien
     // Prevents ENTER key default behavior, e.g. form submission and page refresh, on non-button form controls
     // Only makes AJAX call if zipcode field is not empty.
-    // xTODO: cookies/session storage, sanitize before storing?
-    // xTODO: To debug: country resets to --- on qty change.  Probably due to same Ajax bug with Narrative Theme
-    // xTODO: Focus on zipcode field on zip error; field highlight and error msg to be re-styled
-    // TODO: any enhancements for logged in customers?
     jQuery(function () {
         var ratesBtn             = jQuery('#get_rates_btn');
         var ratesBtnEnabledLabel = ratesBtn.val();
         // Using jQuery :input selector to select all form controls: ':input'
         jQuery('#shipping-calculator').on('keypress', ':input', function enterKeyHandler(e) {
-//            console.dir(e);
-//            console.dir(this);
             if (e.which === 13) {
                 // If ENTER was pressed on Calculate button, then do not preventDefault behavior
                 // and focus should remain on button after form submission, for UX consistency.
                 if (jQuery(this).is('[type="button"]')) {
                     var pollingLimit = 20;
-                    console.log('ENTER on button');
                     setTimeout(function focusOnShippingBtn() {
-                        // Focus on Calculate button only if focus was not moved to another element
+                        // Focus on Calculate button only if focus was not moved by user to another element
                         if (jQuery('#shipping-calculator :focus').length == 0) {
                             // Focus only if btn is re-enabled, i.e. shipping rate Ajax call completed.
                             if (ratesBtn.val() === ratesBtnEnabledLabel) {
-                                console.log('Focus on CALCULATE btn');
                                 ratesBtn.focus();
                             }
                             else { // If btn not re-enabled yet, retry in 100ms... for 20 times max.
                                 if (!pollingLimit--)
                                     return;
-                                console.log('setTimeout for btn focus... ' + pollingLimit);
                                 setTimeout(focusOnShippingBtn, 100);
                             }
                         }
@@ -179,12 +167,10 @@
                 // ENTER was not pressed on Calculate button...
                 // If zip field empty, focus on zip field
                 if (!jQuery.trim(jQuery('#address_zip').val())) {
-                    console.log('ENTER caught; preventDefault; focus zip field');
                     e.preventDefault();
                     jQuery('#address_zip').focus();
                 }
                 else { // If zip field not empty, get rates
-                    console.log('ENTER caught; triggerHandler(click)');
                     e.preventDefault();
                     // Contrary to trigger(), triggerHandler only operates on first matched element
                     jQuery('input.get-rates').triggerHandler('click');
@@ -193,7 +179,6 @@
         });
     });
 
-    // Dien
     // Highlight zip field on zip error
     jQuery(function highlightZipFieldOnError() {
         var zipEl  = jQuery('#address_zip');
@@ -205,14 +190,13 @@
                     m.target.scrollIntoView(false);
                     var errorEl = jQuery(m.target.querySelector('#shipping-rates-feedback.error'));
                     if (/zip/i.test(errorEl.text())) {
-                        console.log('Highlighting zipcode field...');
                         errorEl.addClass('startingColor');
                         // Clean up remaining class whenever elements lose focus
                         zipEl.on('blur', function removeTransitionClass() {
                             zipEl.removeClass('transitioning');
                             errorEl.removeClass('transitioning');
                         });
-                        // Call blur() before focus() so that error highlight activates even if focus was already on element
+                        // Call blur() before focus() so that error highlight activates even if focus was already on element (see CSS)
                         zipEl.addClass('address_zip__input--error').blur().focus();
                         // Return to normal focus highlight with a transition
                         zipEl.addClass('transitioning');
@@ -225,15 +209,7 @@
             });
         });
 
-        console.log('Connecting observer...');
         observer.observe(target, config);
-
-/*        jQuery(window).on('beforeunload', function observerCleanup() {
-            console.log('Disconnecting observer...');
-            observer.disconnect();
-            zipEl.removeClass('address_zip__input--error transitioning');
-            jQuery('#shipping-rates-feedback').removeClass('transitioning');
-        });*/
     });
 </script>
 {% endunless %}

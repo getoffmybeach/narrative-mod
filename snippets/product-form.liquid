@@ -209,7 +209,7 @@ DIEN MOD:
     * "Quantity in cart" tooltip
     * */
     jQuery(function quantityTooltip($) {
-
+        "use strict";
         function updateTooltip() {
             var productId = {{ product.id | default: 0 }};
             return ($.ajax({

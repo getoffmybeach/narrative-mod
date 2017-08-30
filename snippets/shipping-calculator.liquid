@@ -138,6 +138,7 @@
     // Prevents ENTER key default behavior, e.g. form submission and page refresh, on non-button form controls
     // Only makes AJAX call if zipcode field is not empty.
     jQuery(function () {
+        "use strict";
         var ratesBtn             = jQuery('#get_rates_btn');
         var ratesBtnEnabledLabel = ratesBtn.val();
         // Using jQuery :input selector to select all form controls: ':input'
@@ -181,6 +182,7 @@
 
     // Highlight zip field on zip error
     jQuery(function highlightZipFieldOnError() {
+        "use strict";
         var zipEl  = jQuery('#address_zip');
         var target = document.getElementById('wrapper-response');
         var config = { childList: true };

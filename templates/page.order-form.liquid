@@ -276,26 +276,38 @@ Bulk Order Page features:
         // All quantity fields
         var $quantity = $('.bulk-order__quantity input[type="number"]');
 
-        // Returns a jQuery object of quantity inputs with non-zero value
+        /**
+         * @return {JQuery} jQuery collection of input elements with non-zero values.
+         */
         function nonZeroQuantity() {
             return $quantity.filter(function nonZeroTest(idx, elem) {
                 return (+elem.value);  // value is a string, convert to number with +
             });
         }
 
-        // Ask for confirmation before leaving page if some quantities fields are non-zero.
-        function confirmLeave(e) {
+        /**
+         * Ask for confirmation before leaving page if some quantity inputs are non-zero.
+         * @param evt {Event} The triggered event
+         * @return {String} The message to display in confirmation window.
+         */
+        function confirmLeave(evt) {
             var confirm = 'Are you sure?';
 
             if (nonZeroQuantity().length) {
-                (e || window.event).returnValue = confirm;
+                // For IE compatibility.
+                (evt || window.event).returnValue = confirm;
+
                 return confirm;
             }
         }
 
-        // Accepts a jQuery collection of input elements
-        // Returns a Promise
-        // Note: the received collection will be altered
+        /**
+         * Adds product variants to cart by performing Ajax calls synchronously and resets quantity fields to zero.
+         * (Note: the collection received is destroyed when the function finishes.)
+         * @param $quantitiesToAdd {JQuery} Collection of input elements containing quantity of corresponding variants to add to cart.
+         * @param callback {Function} Function to invoke when $quantitiesToAdd has been processed.
+         * @return {JQueryPromise} A Promise.
+         */
         function bulkOrderAddToCart($quantitiesToAdd, callback) {
             var inputEl = $quantitiesToAdd[0];
             var qty = +(inputEl.value) || 0;
@@ -335,7 +347,10 @@ Bulk Order Page features:
             return $quantitiesToAdd.promise();
         }
 
-        // Refresh Cart Drawwer and Change Add button appearance
+        /**
+         * Refreshes the cart drawer and applies secondary label to button.
+         * @param button {HTMLElement} The button element that contains primary-text and secondary-text.
+         */
         function bulkOrderAddToCartDone(button) {
             var $button = $(button);
 

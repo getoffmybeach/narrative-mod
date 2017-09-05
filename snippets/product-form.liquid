@@ -210,6 +210,12 @@ DIEN MOD:
     * */
     jQuery(function quantityTooltip($) {
         "use strict";
+
+        /**
+         * Queries cart's content and updates the tooltip accordingly
+         * @method updateTooltip
+         * @returns {JQueryPromise} A Promise from Ajax call.
+         */
         function updateTooltip() {
             var productId = {{ product.id | default: 0 }};
             return ($.ajax({
@@ -246,9 +252,9 @@ DIEN MOD:
 
         updateTooltip();
 
-        // Listens to Ajax requests to cart.  Updates tooltip if necessary.
-        // Variable jQuery is used here instead of $ as some themes like Narrative augmented jQuery.
-        // If augmented jQuery's ajax() was used throughout the theme, adding handlers with $ will not trigger them.
+        // Listens to Ajax requests to cart and updates tooltip if necessary.
+        // Note: Variable jQuery is used here instead of $ as some themes like Narrative augmented jQuery.
+        //      If augmented jQuery's ajax() was used throughout the theme, then attaching handlers with $ would not trigger them.
         jQuery(document).on('ajaxComplete.tooltip', function listenToCartAjax(event, request, setting) {
             if (/cart\/(?:update|add|change|clear)/i.test(setting.url)) {
                 jQuery(document).off('ajaxComplete.tooltip');

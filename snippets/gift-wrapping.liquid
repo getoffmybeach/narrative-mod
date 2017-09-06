@@ -146,9 +146,15 @@
               gwID && jQuery('#' + gwID + ' ' + SELECTORS.cart_remove_btn).trigger('click');
           };
 
-          // Attention: Call this only when GW item is indeed present in the Cart
-          // since it attaches a listener directly to the GW item remove button
-          Shopify.Cart.DOM.attachSensors = function (gwKey, inputChangeCb, removeBtnCb) {
+          /**
+           * Installs MutationObserver to cart node in the DOM and add listeners to input elements and remove button.
+           * @method attachSensors
+           * @for Shopify.Cart.DOM
+           * @param gwID {String}  Gift-wrap element ID
+           * @param inputChangeCb {Function} Callback on quantity input value change
+           * @param removeBtnCb {Function} Callback on remove button click
+           */
+          Shopify.Cart.DOM.attachSensors = function (gwID, inputChangeCb, removeBtnCb) {
               var target = document.querySelector(SELECTORS.cart_container);
               var config = { childList: true };
               // Activate observer for cart's item removal or addition, enabling auto-refresh of GW qty
@@ -156,18 +162,43 @@
               // Attach listener for qty input element change of each item, enabling auto-refresh of GW qty
               (typeof inputChangeCb === 'function') && jQuery(SELECTORS.cart_container).on('change.updateGiftWrapQuantity', SELECTORS.cart_item_quantity, inputChangeCb);
               // Attach listener to Gift Wrap item's remove button
-              gwKey && (typeof removeBtnCb === 'function') && jQuery('#' + gwKey).on('click.removeGWLineItem', SELECTORS.cart_remove_btn, removeBtnCb);
+              gwID && (typeof removeBtnCb === 'function') && jQuery('#' + gwID).on('click.removeGWLineItem', SELECTORS.cart_remove_btn, removeBtnCb);
           };
 
-          Shopify.Cart.DOM.removeSensors = function (gwKey) {
+          /**
+           * Removes MutationObserver and listeners from cart node in the DOM.
+           * @method removeSensor
+           * @for Shopify.Cart.DOM
+           * @param gwID {String} Gift-wrap element ID
+           */
+          Shopify.Cart.DOM.removeSensors = function (gwID) {
               this.observerItemList && this.observerItemList.disconnect();
               jQuery(SELECTORS.cart_container).off('change.updateGiftWrapQuantity', SELECTORS.cart_item_quantity);
-              gwKey && jQuery('#' + gwKey).off('click.removeGWLineItem', SELECTORS.cart_remove_btn);
+              gwID && jQuery('#' + gwID).off('click.removeGWLineItem', SELECTORS.cart_remove_btn);
           };
 
+          /**
+           * @class GiftWrap
+           * @namespace Shopify.Cart
+           */
           Shopify.Cart.GiftWrap = (function () {
+              /**
+               * Quantity of gift-wrap items in cart
+               * @property _quantity
+               * @type Number
+               * @private
+               * @default 0
+               */
               var _quantity = 0;
-              const _costModel = '{{ settings.gift_wrapping_cost_model | default: "per_item" }}';
+
+              /**
+               * The cost model of the gift-wrap service: "per_item" or "fixed_cost"
+               * @property _COST_MODEL
+               * @type String
+               * @private
+               * @final
+               */
+              const _COST_MODEL = '{{ settings.gift_wrapping_cost_model | default: "per_item" }}';
 
               function getQuantity() {
                   return _quantity;
@@ -180,15 +211,19 @@
               }
 
               function getCostModel() {
-                  return _costModel;
+                  return _COST_MODEL;
               }
 
               function init(quantity) {
                   _setQuantity(quantity);
               }
 
-              // Parameterized the function
-              // Save gift-note
+              /**
+               * Sets the number of gift-wrap items and gift-wrap note in cart. Asynchronous because updates server-side data.
+               * @method set
+               * @param numItems {Number} Number of gift-wrap items
+               * @param callback {Function} Callback
+               */
               function set(numItems, callback) {
                   function defaultSuccess() { location.href = '/cart'; }
                   var note = jQuery('#gift-note').val();
@@ -208,7 +243,11 @@
                   });
               }
 
-              // Parameterized the function
+              /**
+               * Removes gift-wrap items from cart. Asynchronous because updates server-side data.
+               * @method remove
+               * @param callback {Function} Callback
+               */
               function remove(callback) {
                   function defaultSuccess() { location.href = '/cart'; }
                   var done = (typeof callback === 'function') ? callback : defaultSuccess;
@@ -236,33 +275,77 @@
               };
           })(); //IIFE returning a GiftWrap object
 
+          /**
+           * @class DOM
+           * @namespace Shopify.Cart.GiftWrap
+           */
           Shopify.Cart.GiftWrap.DOM = (function () {
-              var _key = '';
+              /**
+               * The gift-wrap element's ID in the DOM.
+               * @property _id
+               * @type String
+               * @private
+               * @default '' (empty string)
+               */
+              var _id = '';
+
+              /**
+               * The ID of the gift-wrap element escaped, i.e. safe for use in CSS selectors
+               * @property _keyEscaped
+               * @type String
+               * @private
+               * @default '' (empty string)
+               */
               var _keyEscaped = '';
 
-              function setKey(k) {
-                  if (typeof k !== 'undefined' && k !== null) {
-                      _key = String(k);
-                      _keyEscaped = jQuery.escapeSelector(_key);
+              /**
+               * Saves the gift-wrap element's ID.
+               * @method _setKey
+               * @param id {String} Gift-wrap element's ID in the DOM
+               * @private
+               */
+              function _setKey(id) {
+                  if (typeof id !== 'undefined' && id !== null) {
+                      _id = String(id);
+                      _keyEscaped = jQuery.escapeSelector(_id);
                   }
               }
 
               function getKey() {
-                  return _key;
+                  return _id;
               }
 
+              /**
+               * Returns gift-wrap element's ID escaped, i.e. safe for use in CSS selectors.
+               * @method getKeyEscaped
+               * @return {String} The gift-wrap element's ID escaped
+               */
               function getKeyEscaped() {
                   return _keyEscaped;
               }
 
-              function init(key) {
-                  this.setKey(key);
+              /**
+               * Initializes the object
+               * @method init
+               * @param id {String} Gift-wrap element's ID
+               */
+              function init(id) {
+                  _setKey(id);
               }
 
+              /**
+               * Resets the state of the object
+               * @method reset
+               */
               function reset() {
-                  this.setKey('');
+                  _setKey('');
               }
 
+              /**
+               * Sets the quantity input field of the gift-wrap element in the DOM
+               * @method setVal
+               * @param value {Number} The quantity
+               */
               function setVal(value) {
                   var key = this.getKeyEscaped();
                   // The id changes from updates_<key> to quantity_<key> after cart refresh with Theme Narrative (bug)!!!
@@ -271,11 +354,17 @@
                       jQuery('#updates_' + key).val(value);
                   }
               }
+
+              /**
+               * Returns current value of quantity input field of the gift-wrap element in the DOM
+               * @method getVal
+               * @return {Number|null} Value of quantity input field or null if no gift-wrap element found.
+               */
               function getVal() {
                   var key = this.getKeyEscaped();
                   // The id changes from updates_<key> to quantity_<key> after cart refresh with Theme Narrative (bug)!!!
                   if (key) {
-                      return (jQuery('#quantity_' + key).val() || jQuery('#updates_' + key).val());
+                      return +(jQuery('#quantity_' + key).val() || jQuery('#updates_' + key).val());
                   }
 
                   return null;
@@ -285,7 +374,6 @@
                   reset: reset,
                   setVal: setVal,
                   getVal: getVal,
-                  setKey: setKey,
                   getKey: getKey,
                   getKeyEscaped: getKeyEscaped
               }

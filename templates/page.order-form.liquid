@@ -277,6 +277,8 @@ Bulk Order Page features:
         var $quantity = $('.bulk-order__quantity input[type="number"]');
 
         /**
+         * @method nonZeroQuantity
+         * @for orderForm
          * @return {JQuery} jQuery collection of input elements with non-zero values.
          */
         function nonZeroQuantity() {
@@ -287,6 +289,8 @@ Bulk Order Page features:
 
         /**
          * Ask for confirmation before leaving page if some quantity inputs are non-zero.
+         * @method confirmLeave
+         * @for orderForm
          * @param evt {Event} The triggered event
          * @return {String} The message to display in confirmation window.
          */
@@ -304,6 +308,8 @@ Bulk Order Page features:
         /**
          * Adds product variants to cart by performing Ajax calls synchronously and resets quantity fields to zero.
          * (Note: the collection received is destroyed when the function finishes.)
+         * @method bulkOrderAddToCart
+         * @for orderForm
          * @param $quantitiesToAdd {JQuery} Collection of input elements containing quantity of corresponding variants to add to cart.
          * @param callback {Function} Function to invoke when $quantitiesToAdd has been processed.
          * @return {JQueryPromise} A Promise.
@@ -349,6 +355,8 @@ Bulk Order Page features:
 
         /**
          * Refreshes the cart drawer and applies secondary label to button.
+         * @method bulkOrderAddToCartDone
+         * @for orderForm
          * @param button {HTMLElement} The button element that contains primary-text and secondary-text.
          */
         function bulkOrderAddToCartDone(button) {

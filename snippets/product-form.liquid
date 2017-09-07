@@ -6,7 +6,7 @@ DIEN MOD:
     - their names can be customized from Theme Editor
     - their type (text, file, number, checkbox) can set from Theme Editor
     - For Type=number, the range can be set from Theme Editor
-+ Added quantity-in-cart tooltip.
++ Added quantity-in-cart tooltip showing the number of unit of the viewed product already in cart.
 {% endcomment %}
 <style>
     .product__add-to-cart-container {
@@ -210,7 +210,6 @@ DIEN MOD:
     * */
     jQuery(function quantityTooltip($) {
         "use strict";
-
         /**
          * Queries cart's content and updates the tooltip accordingly
          * @method updateTooltip

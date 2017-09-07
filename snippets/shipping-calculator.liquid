@@ -98,6 +98,7 @@
 
     // Retrieves user-entered address info from session storage, if any, and sets as defaults
     jQuery(function loadSessionStoredAddress() {
+        "use strict";
         try {
             const country = sessionStorage.getItem('shipping-calculator-country');
             const province = sessionStorage.getItem('shipping-calculator-province');
@@ -113,6 +114,7 @@
 
     // Stores user-entered address info in session storage before leaving cart page
     jQuery(function () {
+        "use strict";
         // Store field values before cart page unload
         jQuery(window).on('beforeunload', function sessionStoreAddress() {
             try {

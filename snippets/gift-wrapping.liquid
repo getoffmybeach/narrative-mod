@@ -59,7 +59,7 @@
       Shopify.Cart = Shopify.Cart || {};
       Shopify.Cart.DOM = Shopify.Cart.DOM || {};
 
-      jQuery(function () {
+      jQuery(function giftWrapping() {
           "use strict";
           var SELECTORS = {
               gift_wrap_checkbox : '{{ gift_wrap_checkbox_id }}',
@@ -403,6 +403,12 @@
           {% endif %}
       {% endunless %}
 
+          /**
+           * Removes gift-wrap item from cart
+           * Callback for 'click' event on Remove button of the Gift-Wrap item in cart
+           * @method handleRemoveGWBtn
+           * @for giftWrapping
+           */
           function handleRemoveGWBtn() {
               Shopify.Cart.DOM.removeSensors(Shopify.Cart.GiftWrap.DOM.getKeyEscaped());
               // Note: this does NOT trigger the "change" event on the GW checkbox
@@ -411,7 +417,12 @@
               Shopify.Cart.GiftWrap.DOM.reset();
           }
 
-          // Update gift wrap quantity to match total items quantity in cart
+          /**
+           * Updates quantity of gift-wrap item in cart whenever quantity of other items changes.
+           * Callback for 'change' event on input element.
+           * @method updateGiftWrapQuantity
+           * @for giftWrapping
+           */
           function updateGiftWrapQuantity() {
               var gwKey = Shopify.Cart.GiftWrap.DOM.getKey();
               var itemsInCart = Shopify.Cart.countItems(gwKey);
@@ -435,8 +446,13 @@
               }
           }
 
-          // Callback for MutationObserver to monitor node addition/removal in cart's item list
-          // and refresh the Gift Wrap item count accordingly
+          /**
+           * Updates quantity of gift-wrap item in cart whenever an item in cart is added or removed.
+           * Callback for MutationObserver to monitor node addition/removal
+           * @method observeItemList
+           * @for giftWrapping
+           * @param mutations
+           */
           function observeItemList(mutations) {
               var changed = mutations.some(function inspectMutation(m) {
                   if (m.type === 'childList') {
@@ -466,7 +482,8 @@
               {% endif %}
           }
 
-          // If cart drawer enabled, provide callbacks to prevent GiftWrap.set/remove from loading cart page after AJAX call
+          // If cart drawer enabled, provide callbacks to Shopify.Cart.GiftWrap.set/remove to be invoked when AJAX call completes.
+          // Otherwise, provide no callback; default behavior is to navigate to cart page.
           {% if settings.show_cart_drawer %}
               var setGiftWrapCb = function () {
                   Shopify.Cart.DOM.addGWItem()
@@ -490,14 +507,6 @@
           {% endif %}
 
           // When the gift-wrapping checkbox is checked or unchecked.
-          // Note: to prevent double refresh of cart page in following scenario:
-          // You start with a state where gift-wrap (GW) is checked and a quantity of GW product in cart.
-          // You uncheck the GW checkbox, then you modify the quantities of your products in cart,
-          // so that now the total of qty is different from the total qty when GW checkbox was checked.
-          // When you then check the GW checkbox again, the cart will refresh and show the GW product reflecting the old total qty.
-          // Now, we have the qty of GW product !== current total qty of products. This will trigger another cart refresh due to
-          // the checks from the above if/elsif/endif block.
-          // The change consists of performing a recount of total qty of items before setting the GW qty.
           jQuery(SELECTORS.gift_wrap_checkbox).change(function checkboxCb() {
               if (jQuery(this).prop('checked')) {
                   {% if settings.gift_wrapping_cost_model == 'per_item' %}
@@ -512,6 +521,7 @@
               }
           });
 
+          // Saves gift-wrap note when text changed
           jQuery('#gift-note').on('change', function saveGWNote() {
               var quantity  = jQuery(SELECTORS.gift_wrap_checkbox).prop('checked') ? Shopify.Cart.GiftWrap.getQuantity() : 0;
               var note      = jQuery(this).val();

@@ -186,6 +186,8 @@
         var zipEl  = jQuery('#address_zip');
         var target = document.getElementById('wrapper-response');
         var config = { childList: true };
+
+        // Observe the proper element in the DOM for the zip error message and apply UI styling when the message appears
         var observer = new MutationObserver(function observeZipError(mutations) {
             mutations.forEach(function inspectMutation(m) {
                 if (m.type === 'childList') {

@@ -290,6 +290,7 @@ Bulk Order Page features:
 
         /**
          * Ask for confirmation before leaving page if some quantity inputs are non-zero.
+         * Callback for beforeunload event.
          * @method confirmLeave
          * @for orderForm
          * @param evt {Event} The triggered event
@@ -312,7 +313,7 @@ Bulk Order Page features:
          * @method bulkOrderAddToCart
          * @for orderForm
          * @param $quantitiesToAdd {JQuery} Collection of input elements containing quantity of corresponding variants to add to cart.
-         * @param callback {Function} Function to invoke when $quantitiesToAdd has been processed.
+         * @param [callback] {Function} Function to invoke when $quantitiesToAdd has been processed.
          * @return {JQueryPromise} A Promise.
          */
         function bulkOrderAddToCart($quantitiesToAdd, callback) {

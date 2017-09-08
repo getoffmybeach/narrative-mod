@@ -74,7 +74,7 @@
            * Returns the number of items in cart, excluding items associated with provided ID.
            * @method countItems
            * @for Shopify.Cart
-           * @param excludedID {String} The ID of the item to exclude from the count.
+           * @param [excludedID] {String} The ID of the item to exclude from the count.
            * @return {number} The number of items in cart without the excluded items.
            */
           Shopify.Cart.countItems = function (excludedID) {
@@ -222,7 +222,7 @@
                * Sets the number of gift-wrap items and gift-wrap note in cart. Asynchronous because updates server-side data.
                * @method set
                * @param numItems {Number} Number of gift-wrap items
-               * @param callback {Function} Callback
+               * @param [callback] {Function} Callback
                */
               function set(numItems, callback) {
                   function defaultSuccess() { location.href = '/cart'; }
@@ -246,7 +246,7 @@
               /**
                * Removes gift-wrap items from cart. Asynchronous because updates server-side data.
                * @method remove
-               * @param callback {Function} Callback
+               * @param [callback] {Function} Callback
                */
               function remove(callback) {
                   function defaultSuccess() { location.href = '/cart'; }
@@ -451,7 +451,7 @@
            * Callback for MutationObserver to monitor node addition/removal
            * @method observeItemList
            * @for giftWrapping
-           * @param mutations
+           * @param mutations {MutationRecord[]} Array of MutationRecord
            */
           function observeItemList(mutations) {
               var changed = mutations.some(function inspectMutation(m) {

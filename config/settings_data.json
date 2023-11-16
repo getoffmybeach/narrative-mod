@@ -204,29 +204,19 @@
               "cta_link": "shopify:\/\/products\/bravo-black-blue-fixie"
             }
           },
-          "1486649208703": {
+          "7c0f2e3f-05e7-4f8c-b3da-679e5bac914a": {
             "type": "image",
             "settings": {
               "alignment": "center center",
-              "title": "City Slicker",
-              "button": "PF Uniform",
-              "cta_link": "shopify:\/\/products\/the-uniform-black-yellow-bike"
-            }
-          },
-          "1486649146314": {
-            "type": "image",
-            "settings": {
-              "alignment": "center center",
-              "title": "Hot Rod",
-              "button": "PF Golf",
-              "cta_link": "shopify:\/\/products\/golf-orange-bicycle"
+              "title": "Tell your story",
+              "button": "Slide title",
+              "cta_link": ""
             }
           }
         },
         "block_order": [
           "1486649185448",
-          "1486649208703",
-          "1486649146314"
+          "7c0f2e3f-05e7-4f8c-b3da-679e5bac914a"
         ],
         "settings": {
           "cta": "view more",

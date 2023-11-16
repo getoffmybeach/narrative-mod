@@ -14,9 +14,9 @@
     "color_form_elements": "#fff",
     "color_cart_flag": "#eb4f47",
     "type_base_size": "62.5%",
-    "type_header_family": "Baskerville MT, 'Baskerville Old Face', 'Hoefler Text', Garamond, 'Times New Roman', serif",
+    "type_header_family": "Google_PT+Sans_400_sans",
     "type_bold_titles": false,
-    "type_base_family": "'Avenir', 'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+    "type_base_family": "'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial, sans-serif",
     "show_cart_drawer": true,
     "show_cart_note": true,
     "share_facebook": true,
@@ -49,7 +49,7 @@
       "header": {
         "type": "header",
         "settings": {
-          "icon": "bag",
+          "icon": "cart",
           "logo": "shopify:\/\/shop_images\/Aeros_Original_Logo_White.png",
           "logo_max_height": "30",
           "enable_transparent": true,
@@ -197,8 +197,9 @@
           "1486649185448": {
             "type": "image",
             "settings": {
+              "image": "shopify:\/\/shop_images\/junho-iz0hYXE64nc-unsplash.jpg",
               "alignment": "center center",
-              "title": "Knight Rider",
+              "title": "Minimal",
               "button": "PF Bravo",
               "cta_link": "shopify:\/\/products\/bravo-black-blue-fixie"
             }
